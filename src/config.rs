@@ -3,40 +3,18 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Write};
 use crate::{Cli, CONFIG_FILE_NAME};
+use crate::destination_config::DestinationConfig;
+use crate::destination_kind::DestinationKind;
 use crate::destinations::file::FileDestination;
-use crate::destinations::MessageDestination;
-
-#[cfg(feature = "discord")]
-use crate::destinations::discord::DiscordDestination;
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     destinations: Vec<DestinationConfig>,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct DestinationConfig {
-    // Whether errors with sending notifications will be reported to this destination.
-    root: bool,
-    #[serde(flatten)]
-    dest_type: DestinationKind,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub enum DestinationKind {
-    File(FileDestination),
-    #[cfg(feature = "discord")]
-    Discord(DiscordDestination),
-}
-
-impl DestinationKind {
-    pub fn get_destination<T>(&self) -> &dyn MessageDestination {
-        match &self {
-            DestinationKind::File(dest) => dest,
-            #[cfg(feature = "discord")]
-            DestinationKind::Discord(dest) => dest,
-        }
+impl Config {
+    pub fn get_destinations(&self) -> &Vec<DestinationConfig> {
+        &self.destinations
     }
 }
 
@@ -56,7 +34,7 @@ impl Default for Config {
         };
         Self {
             destinations: vec![
-                DestinationConfig { root: true, dest_type: DestinationKind::File(FileDestination::new(log_path)) }
+                DestinationConfig::new(true, DestinationKind::File(FileDestination::new(log_path)))
             ]
         }
     }

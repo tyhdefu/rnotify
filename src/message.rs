@@ -1,20 +1,23 @@
-use std::time::Instant;
+use std::fmt::{Debug, Display};
+use chrono::{DateTime, TimeZone};
 use clap::clap_derive::ValueEnum;
 
-#[derive(Debug)]
-pub struct Message {
+#[derive(Debug, Clone)]
+pub struct Message<TZ: TimeZone>
+    where TZ::Offset: Display {
     level: Level,
     title: Option<String>,
     message_detail: String,
     component: Option<String>,
     author: Option<String>,
-    timestamp: Instant,
+    timestamp: DateTime<TZ>,
 }
 
-impl Message {
+impl<TZ: TimeZone> Message<TZ>
+    where TZ::Offset: Display {
     pub fn new(level: Level, title: Option<String>,
                message_detail: String, component: Option<String>,
-               author: Option<String>, timestamp: Instant,
+               author: Option<String>, timestamp: DateTime<TZ>,
     ) -> Self {
         Self {
             level,
@@ -38,7 +41,7 @@ impl Message {
         &self.message_detail
     }
 
-    pub fn get_timestamp(&self) -> &Instant {
+    pub fn get_timestamp(&self) -> &DateTime<TZ> {
         &self.timestamp
     }
 

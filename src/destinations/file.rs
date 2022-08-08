@@ -2,25 +2,33 @@ use std::error::Error;
 use std::fs::File;
 use std::path::PathBuf;
 use serde::{Serialize, Deserialize};
-use std::fmt::Write;
+use std::fmt::{Debug, Display, Write};
+use std::fs;
 use std::io::Write as IoWrite;
+use chrono::TimeZone;
 use crate::destinations::MessageDestination;
 use crate::message::Message;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct FileDestination {
     path: PathBuf,
 }
 
 impl MessageDestination for FileDestination {
-    fn send(&self, message: &Message) -> Result<(), Box<dyn Error>> {
+    fn send<TZ: TimeZone>(&self, message: &Message<TZ>) -> Result<(), Box<dyn Error>>
+        where TZ::Offset: Display {
+        if let Some(parent) = self.path.parent() {
+            if !parent.exists() {
+                fs::create_dir_all(parent)?;
+            }
+        }
         let s = self.format_message(message);
         let mut file = File::options()
             .create(true)
             .append(true)
             .open(&self.path)?;
 
-        file.write(s.as_bytes())?;
+        writeln!(&mut file, "{}", s)?;
         Ok(())
     }
 }
@@ -33,9 +41,13 @@ impl FileDestination {
     }
 
     // TODO: Allow custom format.
-    fn format_message(&self, message: &Message) -> String {
+    fn format_message<TZ: TimeZone>(&self, message: &Message<TZ>) -> String
+        where TZ::Offset: Display {
         let mut s = String::new();
-        write!(s, "{:?} - {:?}:", message.get_timestamp(), message.get_level()).unwrap();
+        write!(s, "{} - {:?}:", message.get_timestamp().to_rfc3339(), message.get_level()).unwrap();
+        if message.get_component().is_some() {
+            write!(s, " [{}] ", message.get_component().as_ref().unwrap()).unwrap();
+        }
         if message.get_title().is_some() {
             write!(s, " {} - ", message.get_title().as_ref().unwrap()).unwrap();
         }
