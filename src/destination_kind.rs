@@ -19,11 +19,10 @@ pub enum DestinationKind {
 impl DestinationKind {
     pub fn send_to_destination<TZ: TimeZone>(&self, message: &Message<TZ>) -> Result<(), Box<dyn std::error::Error>>
         where TZ::Offset: Display {
-        let dest = match &self {
-            DestinationKind::File(dest) => dest,
+        match &self {
+            DestinationKind::File(dest) => dest.send(message),
             #[cfg(feature = "discord")]
-            DestinationKind::Discord(dest) => dest,
-        };
-        dest.send(message)
+            DestinationKind::Discord(dest) => dest.send(message),
+        }
     }
 }

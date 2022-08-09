@@ -9,9 +9,12 @@ edition = "2021"
 clap = { version = "3.2.16", features = ["derive"] }
 serde = { version = "1.0.142", features = ["derive"]}
 toml = "0.5.9"
-webhook = "2.0.0"
 serde_json = "1.0.83"
 chrono = "0.4.19"
 
+discord-webhook = { version = "0.1.0", features = ["models"], optional = true }
+curl = { version = "0.4.44", optional = true }
+
 [features]
-discord = []
+default = ["discord"]
+discord = ["dep:discord-webhook", "dep:curl"]

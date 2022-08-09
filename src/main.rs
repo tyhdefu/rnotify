@@ -3,6 +3,7 @@ mod destinations;
 mod message;
 mod destination_kind;
 mod destination_config;
+mod error;
 
 use std::fmt::{Debug, Display};
 use std::io::Read;

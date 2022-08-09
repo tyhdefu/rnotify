@@ -8,6 +8,7 @@ use crate::Message;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DestinationConfig {
     // Whether errors with sending notifications will be reported to this destination.
+    #[serde(default)] // Default false.
     root: bool,
     #[serde(flatten)]
     dest_type: DestinationKind,
