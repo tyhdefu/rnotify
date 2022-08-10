@@ -5,6 +5,8 @@ use crate::message::Message;
 pub mod file;
 #[cfg(feature = "discord")]
 pub mod discord;
+#[cfg(feature = "mail")]
+pub mod mail;
 
 pub trait MessageDestination {
     fn send<TZ: TimeZone>(&self, message: &Message<TZ>) -> Result<(), Box<dyn std::error::Error>>

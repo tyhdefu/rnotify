@@ -6,6 +6,8 @@ use crate::destinations::MessageDestination;
 
 #[cfg(feature = "discord")]
 use crate::destinations::discord::DiscordDestination;
+#[cfg(feature = "mail")]
+use crate::destinations::mail::MailDestination;
 use crate::Message;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -14,6 +16,8 @@ pub enum DestinationKind {
     File(FileDestination),
     #[cfg(feature = "discord")]
     Discord(DiscordDestination),
+    #[cfg(feature = "mail")]
+    Mail(MailDestination),
 }
 
 impl DestinationKind {
@@ -23,6 +27,8 @@ impl DestinationKind {
             DestinationKind::File(dest) => dest.send(message),
             #[cfg(feature = "discord")]
             DestinationKind::Discord(dest) => dest.send(message),
+            #[cfg(feature = "mail")]
+            DestinationKind::Mail(dest) => dest.send(message),
         }
     }
 }

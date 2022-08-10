@@ -15,6 +15,9 @@ chrono = "0.4.19"
 discord-webhook = { version = "0.1.0", features = ["models"], optional = true }
 curl = { version = "0.4.44", optional = true }
 
+lettre = { version = "0.10.1", features = ["serde", "rustls"], optional = true }
+
 [features]
-default = ["discord"]
+default = ["discord", "mail"]
 discord = ["dep:discord-webhook", "dep:curl"]
+mail = ["dep:lettre"]
