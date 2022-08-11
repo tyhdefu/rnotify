@@ -1,9 +1,13 @@
+extern crate core;
+
 mod config;
 mod destinations;
 mod message;
 mod destination_kind;
 mod destination_config;
 mod error;
+#[cfg(feature = "curl")]
+mod curl_util;
 
 use std::fmt::{Debug, Display};
 use std::io::Read;

@@ -18,6 +18,9 @@ curl = { version = "0.4.44", optional = true }
 lettre = { version = "0.10.1", features = ["serde", "rustls"], optional = true }
 
 [features]
-default = ["discord", "mail"]
-discord = ["dep:discord-webhook", "dep:curl"]
+default = ["discord", "telegram", "mail"]
+curl = ["dep:curl"]
+
+discord = ["dep:discord-webhook", "curl"]
+telegram = ["curl"]
 mail = ["dep:lettre"]

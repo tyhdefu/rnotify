@@ -7,6 +7,8 @@ pub mod file;
 pub mod discord;
 #[cfg(feature = "mail")]
 pub mod mail;
+#[cfg(feature = "telegram")]
+pub mod telegram;
 
 pub trait MessageDestination {
     fn send<TZ: TimeZone>(&self, message: &Message<TZ>) -> Result<(), Box<dyn std::error::Error>>
