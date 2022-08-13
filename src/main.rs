@@ -8,6 +8,7 @@ mod destination_config;
 mod error;
 #[cfg(feature = "curl")]
 mod curl_util;
+mod formatted_message_detail;
 
 use std::fmt::{Debug, Display};
 use std::io::Read;
@@ -15,7 +16,7 @@ use std::path::PathBuf;
 use chrono::{Local, TimeZone};
 use clap::Parser;
 use crate::destination_config::DestinationConfig;
-use crate::message::{Level, Message};
+use crate::message::{Level, Message, MessageDetail};
 
 const CONFIG_FILE_NAME: &str = ".rnotify.toml";
 
@@ -41,6 +42,14 @@ fn main() {
         }
     };
 
+
+    let message_detail = if cli.formatted {
+        MessageDetail::Formatted(formatted_message_detail::parse_raw_to_formatted(&message_detail))
+    } else {
+        MessageDetail::Raw(message_detail)
+    };
+
+    println!("detail: {:?}", message_detail);
 
     // Construct message.
     let message = Message::new(
@@ -78,14 +87,14 @@ fn main() {
         destinations.iter()
             .filter(|dest| dest.is_root())
             .for_each(|dest| {
-            match dest.send(&message) {
-                Ok(_) => {}
-                Err(err) => {
-                    eprintln!("Failed to send error '{:?}' to root destination, these should be destinations that never fail. Error: {}, Root logger destination: {:?}", message, err, dest);
-                    any_failed = true;
+                match dest.send(&message) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        eprintln!("Failed to send error '{:?}' to root destination, these should be destinations that never fail. Error: {}, Root logger destination: {:?}", message, err, dest);
+                        any_failed = true;
+                    }
                 }
-            }
-        })
+            })
     }
     if any_failed {
         panic!("Failed to send self errors to root loggers, check above lines for details.")
@@ -94,7 +103,7 @@ fn main() {
 
 #[derive(Debug)]
 struct SendError<TZ: TimeZone>
-where TZ::Offset: Display
+    where TZ::Offset: Display
 {
     err: Box<dyn std::error::Error>,
     index: usize,
@@ -104,12 +113,11 @@ where TZ::Offset: Display
 
 impl<TZ: TimeZone + Debug> SendError<TZ>
     where TZ::Offset: Display {
-
     pub fn to_message(&self) -> Message<TZ> {
         Message::new(Level::SelfError,
                      Some(format!("Failed to send notification to destination {}", self.index)),
-                     format!("Rnotify failed to send a message {:?} to destination '{}'. Error: '{}' A notification has been sent here because this is configured as a root logger.",
-                             self.message, self.item_string, self.err),
+                     message::MessageDetail::Raw(format!("Rnotify failed to send a message {:?} to destination '{}'. Error: '{}' A notification has been sent here because this is configured as a root logger.",
+                                                         self.message, self.item_string, self.err)),
                      None,
                      None,
                      self.message.get_timestamp().clone(),
@@ -151,4 +159,7 @@ pub struct Cli {
     component: Option<String>,
     #[clap(short, long)]
     author: Option<String>,
+
+    #[clap(short, long)]
+    formatted: bool,
 }

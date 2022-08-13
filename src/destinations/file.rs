@@ -51,7 +51,7 @@ impl FileDestination {
         if message.get_title().is_some() {
             write!(s, "{} - ", message.get_title().as_ref().unwrap()).unwrap();
         }
-        write!(s, "'{}'", message.get_message_detail()).unwrap();
+        write!(s, "'{}'", message.get_message_detail().raw()).unwrap();
         if message.get_author().is_some() {
             write!(s, " @ {}", message.get_author().as_ref().unwrap()).unwrap();
         }

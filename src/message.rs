@@ -1,13 +1,15 @@
 use std::fmt::{Debug, Display};
 use chrono::{DateTime, TimeZone};
 use clap::clap_derive::ValueEnum;
+use crate::formatted_message_detail::FormattedMessageDetail;
+use crate::MessageDetail::Formatted;
 
 #[derive(Debug, Clone)]
 pub struct Message<TZ: TimeZone>
     where TZ::Offset: Display {
     level: Level,
     title: Option<String>,
-    message_detail: String,
+    message_detail: MessageDetail,
     component: Option<String>,
     author: Option<String>,
     timestamp: DateTime<TZ>,
@@ -16,7 +18,7 @@ pub struct Message<TZ: TimeZone>
 impl<TZ: TimeZone> Message<TZ>
     where TZ::Offset: Display {
     pub fn new(level: Level, title: Option<String>,
-               message_detail: String, component: Option<String>,
+               message_detail: MessageDetail, component: Option<String>,
                author: Option<String>, timestamp: DateTime<TZ>,
     ) -> Self {
         Self {
@@ -37,7 +39,7 @@ impl<TZ: TimeZone> Message<TZ>
         &self.title
     }
 
-    pub fn get_message_detail(&self) -> &String {
+    pub fn get_message_detail(&self) -> &MessageDetail {
         &self.message_detail
     }
 
@@ -51,6 +53,25 @@ impl<TZ: TimeZone> Message<TZ>
 
     pub fn get_component(&self) -> &Option<String> {
         &self.component
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum MessageDetail {
+    Raw(String),
+    Formatted(FormattedMessageDetail),
+}
+
+impl MessageDetail {
+    pub fn raw(&self) -> &str {
+        match &self {
+            MessageDetail::Raw(raw) => raw,
+            MessageDetail::Formatted(formatted) => formatted.raw()
+        }
+    }
+
+    pub fn has_formatting(&self) -> bool {
+        matches!(&self, Formatted(_))
     }
 }
 

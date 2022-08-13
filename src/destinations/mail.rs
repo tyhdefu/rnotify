@@ -46,7 +46,7 @@ impl MessageDestination for MailDestination {
             message_builder = message_builder.subject(title);
         }
 
-        let email = message_builder.body(message.get_message_detail().clone())?;
+        let email = message_builder.body(message.get_message_detail().raw().to_owned())?;
 
         let creds = authentication::Credentials::new(self.relay.username.clone(), self.relay.password.clone());
         let mailer =
