@@ -2,21 +2,20 @@ use std::error::Error;
 use std::fs::File;
 use std::path::PathBuf;
 use serde::{Serialize, Deserialize};
-use std::fmt::{Debug, Display, Write};
+use std::fmt::{Debug, Write};
 use std::fs;
 use std::io::Write as IoWrite;
-use chrono::{SecondsFormat, TimeZone};
-use crate::destinations::MessageDestination;
+use chrono::{Local, SecondsFormat, TimeZone};
 use crate::message::Message;
+use super::MessageDestination;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct FileDestination {
     path: PathBuf,
 }
 
 impl MessageDestination for FileDestination {
-    fn send<TZ: TimeZone>(&self, message: &Message<TZ>) -> Result<(), Box<dyn Error>>
-        where TZ::Offset: Display {
+    fn send(&self, message: &Message) -> Result<(), Box<dyn Error>> {
         if let Some(parent) = self.path.parent() {
             if !parent.exists() {
                 fs::create_dir_all(parent)?;
@@ -41,10 +40,10 @@ impl FileDestination {
     }
 
     // TODO: Allow custom format.
-    fn format_message<TZ: TimeZone>(&self, message: &Message<TZ>) -> String
-        where TZ::Offset: Display {
+    fn format_message(&self, message: &Message) -> String {
         let mut s = String::new();
-        write!(s, "{} - {:?}: ", message.get_timestamp().to_rfc3339_opts(SecondsFormat::Millis, true), message.get_level()).unwrap();
+        let timestamp = Local::timestamp_millis(&Local, message.get_unix_timestamp_millis());
+        write!(s, "{} - {:?}: ", timestamp.to_rfc3339_opts(SecondsFormat::Millis, true), message.get_level()).unwrap();
         if message.get_component().is_some() {
             write!(s, "[{}] ", message.get_component().as_ref().unwrap()).unwrap();
         }

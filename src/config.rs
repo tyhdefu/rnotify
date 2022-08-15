@@ -2,10 +2,9 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Write};
-use crate::{Cli, CONFIG_FILE_NAME};
-use crate::destination_config::DestinationConfig;
-use crate::destination_kind::DestinationKind;
-use crate::destinations::file::FileDestination;
+use crate::destination::kinds::DestinationKind;
+use crate::DestinationConfig;
+use crate::destination::kinds::file::FileDestination;
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -46,14 +45,14 @@ pub fn read_config_file(mut file: File) -> Config {
     toml::from_str(&s).expect("Error parsing config file.")
 }
 
-pub fn fetch_config_file(cli: &Cli) -> File {
-    if cli.config_file.is_some() {
-        return File::options().read(true).open(cli.config_file.as_ref().unwrap())
-            .expect(&format!("Failed to open config file provided by argument for reading, {:?}", cli.config_file));
+pub fn fetch_config_file(verbose: bool, config_file_path: &Option<PathBuf>, default_path: &PathBuf) -> File {
+    if config_file_path.is_some() {
+        return File::options().read(true).open(config_file_path.as_ref().unwrap())
+            .expect(&format!("Failed to open config file provided by argument for reading, {:?}", config_file_path));
     }
 
     let home_dir_path = get_home_dir();
-    if cli.verbose {
+    if verbose {
         println!("HomeDir: '{}'", home_dir_path);
     }
 
@@ -62,7 +61,7 @@ pub fn fetch_config_file(cli: &Cli) -> File {
     if !path_buf.exists() {
         panic!("Home directory does not exist!");
     }
-    path_buf.push(CONFIG_FILE_NAME);
+    path_buf.push(default_path);
     println!("Using config file path: {}", &path_buf.display());
 
     if !path_buf.exists() {

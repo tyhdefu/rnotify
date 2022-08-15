@@ -1,25 +1,24 @@
-use std::fmt::{Debug, Display};
-use chrono::{DateTime, TimeZone};
+use std::fmt::Debug;
 use clap::clap_derive::ValueEnum;
-use crate::formatted_message_detail::FormattedMessageDetail;
-use crate::MessageDetail::Formatted;
+use message::formatted_detail::FormattedMessageDetail;
+use crate::message;
+
+pub mod formatted_detail;
 
 #[derive(Debug, Clone)]
-pub struct Message<TZ: TimeZone>
-    where TZ::Offset: Display {
+pub struct Message {
     level: Level,
     title: Option<String>,
     message_detail: MessageDetail,
     component: Option<String>,
     author: Option<String>,
-    timestamp: DateTime<TZ>,
+    unix_timestamp_millis: i64,
 }
 
-impl<TZ: TimeZone> Message<TZ>
-    where TZ::Offset: Display {
+impl Message {
     pub fn new(level: Level, title: Option<String>,
                message_detail: MessageDetail, component: Option<String>,
-               author: Option<String>, timestamp: DateTime<TZ>,
+               author: Option<String>, unix_timestamp_millis: i64,
     ) -> Self {
         Self {
             level,
@@ -27,7 +26,7 @@ impl<TZ: TimeZone> Message<TZ>
             message_detail,
             component,
             author,
-            timestamp
+            unix_timestamp_millis
         }
     }
 
@@ -43,8 +42,8 @@ impl<TZ: TimeZone> Message<TZ>
         &self.message_detail
     }
 
-    pub fn get_timestamp(&self) -> &DateTime<TZ> {
-        &self.timestamp
+    pub fn get_unix_timestamp_millis(&self) -> i64 {
+        self.unix_timestamp_millis
     }
 
     pub fn get_author(&self) -> &Option<String> {
@@ -71,7 +70,7 @@ impl MessageDetail {
     }
 
     pub fn has_formatting(&self) -> bool {
-        matches!(&self, Formatted(_))
+        matches!(&self, MessageDetail::Formatted(_))
     }
 }
 
@@ -80,5 +79,6 @@ pub enum Level {
     Info,
     Warn,
     Error,
+    SelfInfo,
     SelfError,
 }

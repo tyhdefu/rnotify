@@ -1,14 +1,12 @@
 use std::error::Error;
-use std::fmt::Display;
-use chrono::TimeZone;
 use lettre::message::Mailbox;
 use lettre::{SmtpTransport, Transport};
 use lettre::transport::smtp::authentication;
 use serde::{Serialize, Deserialize};
-use crate::destinations::MessageDestination;
+use crate::destination::kinds::MessageDestination;
 use crate::Message;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MailDestination {
     from: Mailbox,
     relay: Relay,
@@ -16,7 +14,7 @@ pub struct MailDestination {
     reply_to: Option<Mailbox>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Relay {
     url: String,
     #[serde(default = "default_port")]
@@ -32,8 +30,7 @@ fn default_port() -> u16 {
 }
 
 impl MessageDestination for MailDestination {
-    fn send<TZ: TimeZone>(&self, message: &Message<TZ>) -> Result<(), Box<dyn Error>>
-        where TZ::Offset: Display {
+    fn send(&self, message: &Message) -> Result<(), Box<dyn Error>> {
         println!("Message destination.");
         let mut message_builder = lettre::Message::builder()
             .from(self.from.clone())

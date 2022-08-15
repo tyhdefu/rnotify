@@ -1,31 +1,21 @@
-extern crate core;
-
-mod config;
-mod destinations;
-mod message;
-mod destination_kind;
-mod destination_config;
-mod error;
-#[cfg(feature = "curl")]
-mod curl_util;
-mod formatted_message_detail;
-
-use std::fmt::{Debug, Display};
 use std::io::Read;
 use std::path::PathBuf;
-use chrono::{Local, TimeZone};
+use std::time::{SystemTime, UNIX_EPOCH};
 use clap::Parser;
-use crate::destination_config::DestinationConfig;
-use crate::message::{Level, Message, MessageDetail};
+use rnotifylib::{config, message, send_message};
+use rnotifylib::message::{Level, Message, MessageDetail};
 
 const CONFIG_FILE_NAME: &str = ".rnotify.toml";
 
 fn main() {
     // TODO: Allow configuration of timezone.
-    let timestamp = Local::now();
+    let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)
+        .expect("Current time is before the unix epoch!")
+        .as_millis();
     let cli: Cli = Cli::parse();
+
     let config = {
-        let file = config::fetch_config_file(&cli);
+        let file = config::fetch_config_file(cli.verbose, &cli.config_file, &PathBuf::from(CONFIG_FILE_NAME));
         config::read_config_file(file)
     };
 
@@ -44,12 +34,10 @@ fn main() {
 
 
     let message_detail = if cli.formatted {
-        MessageDetail::Formatted(formatted_message_detail::parse_raw_to_formatted(&message_detail))
+        MessageDetail::Formatted(message::formatted_detail::parse_raw_to_formatted(&message_detail))
     } else {
         MessageDetail::Raw(message_detail)
     };
-
-    println!("detail: {:?}", message_detail);
 
     // Construct message.
     let message = Message::new(
@@ -58,84 +46,20 @@ fn main() {
         message_detail,
         cli.component,
         cli.author,
-        timestamp,
+        timestamp as i64,
     );
+
     if cli.verbose {
         println!("Message: {:?}", message);
     }
 
-    let destinations = config.get_destinations();
-
-    let errors: Vec<_> = destinations.iter()
-        .enumerate()
-        .filter_map(|(i, dest)| dest.send(&message).err()
-            .map(|err| SendError::from(err, i, dest, message.clone())))
-        .collect();
-
-    if errors.is_empty() {
+    let result = send_message(message, &config);
+    if result.is_ok() {
         return;
     }
-
-    if !destinations.iter().any(|dest| dest.is_root()) {
-        panic!("No root loggers configured and errors sending to destination(s) occurred. Please setup a root destination. Errors: {:?}", errors);
-    }
-
-    let mut any_failed = false;
-    for send_error in errors {
-        let message = send_error.to_message();
-        // Send any send errors to root destinations.
-        destinations.iter()
-            .filter(|dest| dest.is_root())
-            .for_each(|dest| {
-                match dest.send(&message) {
-                    Ok(_) => {}
-                    Err(err) => {
-                        eprintln!("Failed to send error '{:?}' to root destination, these should be destinations that never fail. Error: {}, Root logger destination: {:?}", message, err, dest);
-                        any_failed = true;
-                    }
-                }
-            })
-    }
-    if any_failed {
-        panic!("Failed to send self errors to root loggers, check above lines for details.")
-    }
-}
-
-#[derive(Debug)]
-struct SendError<TZ: TimeZone>
-    where TZ::Offset: Display
-{
-    err: Box<dyn std::error::Error>,
-    index: usize,
-    item_string: String,
-    message: Message<TZ>,
-}
-
-impl<TZ: TimeZone + Debug> SendError<TZ>
-    where TZ::Offset: Display {
-    pub fn to_message(&self) -> Message<TZ> {
-        Message::new(Level::SelfError,
-                     Some(format!("Failed to send notification to destination {}", self.index)),
-                     message::MessageDetail::Raw(format!("Rnotify failed to send a message {:?} to destination '{}'. Error: '{}' A notification has been sent here because this is configured as a root logger.",
-                                                         self.message, self.item_string, self.err)),
-                     None,
-                     None,
-                     self.message.get_timestamp().clone(),
-        )
-    }
-}
-
-impl<TZ: TimeZone> SendError<TZ>
-    where TZ::Offset: Display {
-    pub fn from(err: Box<dyn std::error::Error>, i: usize, item: &DestinationConfig, message: Message<TZ>) -> Self
-    {
-        Self {
-            err,
-            index: i,
-            item_string: serde_json::to_string(item).unwrap_or_else(|_| format!("{:?}", item)),
-            message,
-        }
-    }
+    let err = result.unwrap_err();
+    eprintln!("Failed to send message to one or more destination");
+    eprintln!("{}", err);
 }
 
 #[derive(Parser)]

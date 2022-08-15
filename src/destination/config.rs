@@ -1,11 +1,10 @@
 use std::error::Error;
-use std::fmt::{Debug, Display};
-use chrono::TimeZone;
+use std::fmt::Debug;
 use serde::{Deserialize, Serialize};
-use crate::destination_kind::DestinationKind;
+use crate::destination::kinds::DestinationKind;
 use crate::Message;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DestinationConfig {
     // Whether errors with sending notifications will be reported to this destination.
     #[serde(default)] // Default false.
@@ -22,8 +21,7 @@ impl DestinationConfig {
         }
     }
 
-    pub fn send<TZ: TimeZone>(&self, message: &Message<TZ>) -> Result<(), Box<dyn Error>>
-        where TZ::Offset: Display{
+    pub fn send(&self, message: &Message) -> Result<(), Box<dyn Error>> {
         self.dest_type.send_to_destination(message)
     }
 

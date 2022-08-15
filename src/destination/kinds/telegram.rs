@@ -1,12 +1,13 @@
 use std::error::Error;
-use std::fmt::{Debug, Display};
-use chrono::{SecondsFormat, TimeZone};
+use std::fmt::Debug;
+use chrono::{Local, SecondsFormat, TimeZone};
 use serde::{Serialize, Deserialize};
-use crate::destinations::MessageDestination;
-use crate::{curl_util, Message, MessageDetail};
-use crate::formatted_message_detail::{FormattedMessageComponent, FormattedString, Style};
+use super::MessageDestination;
+use crate::{curl_util, Message};
+use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
+use crate::message::MessageDetail;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TelegramDestination {
     bot_token: String,
     chat_id: String,
@@ -38,8 +39,7 @@ impl TelegramMessage {
 }
 
 impl TelegramDestination {
-    fn to_tg_message<TZ: TimeZone>(&self, message: &Message<TZ>) -> TelegramMessage
-        where TZ::Offset: Display {
+    fn to_tg_message(&self, message: &Message) -> TelegramMessage {
         let html_formatting = message.get_message_detail().has_formatting();
 
         let mut content = String::new();
@@ -78,7 +78,8 @@ impl TelegramDestination {
 
         content.push('\n');
         content.push_str("-----\n");
-        let timestamp_string = message.get_timestamp().to_rfc3339_opts(SecondsFormat::Millis, true);
+        let timestamp = Local::timestamp_millis(&Local, message.get_unix_timestamp_millis());
+        let timestamp_string = timestamp.to_rfc3339_opts(SecondsFormat::Millis, true);
         if html_formatting {
             content.push_str(&format!("<pre>{}</pre>", timestamp_string));
         }
@@ -96,10 +97,9 @@ impl TelegramDestination {
 }
 
 impl MessageDestination for TelegramDestination {
-    fn send<TZ: TimeZone>(&self, message: &Message<TZ>) -> Result<(), Box<dyn Error>> where TZ::Offset: Display {
+    fn send(&self, message: &Message) -> Result<(), Box<dyn Error>> {
         // TODO: Add component and pretty up.
         let message = self.to_tg_message(message);
-        println!("message: {:?}", serde_json::to_string(&message));
 
         let url = format!("https://api.telegram.org/bot{}/sendMessage", self.bot_token);
 
