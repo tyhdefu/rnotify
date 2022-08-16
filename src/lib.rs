@@ -10,8 +10,8 @@ pub mod config;
 pub mod destination;
 pub mod error;
 
-#[cfg(feature = "curl")]
-mod curl_util;
+#[cfg(feature = "http")]
+pub mod http_util;
 mod senderror;
 
 /// Send a message to all destinations as specified by the config

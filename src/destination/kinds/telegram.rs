@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use chrono::{Local, SecondsFormat, TimeZone};
 use serde::{Serialize, Deserialize};
 use super::MessageDestination;
-use crate::{curl_util, Message};
+use crate::{http_util, Message};
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
 use crate::message::MessageDetail;
 
@@ -103,9 +103,7 @@ impl MessageDestination for TelegramDestination {
 
         let url = format!("https://api.telegram.org/bot{}/sendMessage", self.bot_token);
 
-        let payload = serde_json::to_string(&message)?;
-
-        curl_util::post_json_to(&url, &payload)
+        http_util::post_as_json_to(&url, &message)
     }
 }
 

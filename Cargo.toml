@@ -19,14 +19,14 @@ serde_json = "1.0.83"
 chrono = "0.4.19"
 
 discord-webhook = { version = "0.1.0", features = ["models"], default-features = false, optional = true }
-curl = { version = "0.4.44", default-features = false, features = ["rustls"], optional = true }
+minreq = { version = "2.6.0", default-features = false, features = ["https-rustls", "json-using-serde"], optional = true}
 
 lettre = { version = "0.10.1", default-features = false, features = ["serde", "rustls-tls", "builder", "smtp-transport"], optional = true }
 
 [features]
-default = ["discord", "telegram", "mail"]
-curl = ["dep:curl"]
+default = ["discord", "telegram"]
+http = ["dep:minreq"]
 
-discord = ["dep:discord-webhook", "curl"]
-telegram = ["curl"]
+discord = ["dep:discord-webhook", "http"]
+telegram = ["http"]
 mail = ["dep:lettre"]

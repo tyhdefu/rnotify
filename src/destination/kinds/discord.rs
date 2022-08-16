@@ -1,7 +1,7 @@
 use std::error::Error;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use serde::{Serialize, Deserialize};
-use crate::{curl_util, Level};
+use crate::{http_util, Level};
 use super::MessageDestination;
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
 use crate::message::{Message, MessageDetail};
@@ -76,8 +76,8 @@ fn apply_style(s: &str, style: &Style) -> String {
 impl MessageDestination for DiscordDestination {
     fn send(&self, message: &Message) -> Result<(), Box<dyn Error>> {
         let discord_msg = self.to_discord_message(message);
-        let payload = serde_json::to_string(&discord_msg)?;
-        curl_util::post_json_to(&self.url, &payload)
+        //let payload = serde_json::to_string(&discord_msg)?;
+        http_util::post_as_json_to(&self.url, &discord_msg)
     }
 }
 
