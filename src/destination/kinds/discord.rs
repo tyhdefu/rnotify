@@ -10,18 +10,15 @@ use crate::message::{Message, MessageDetail};
 pub struct DiscordDestination {
     url: String,
     username: Option<String>,
-    #[serde(default = "default_message_content")]
-    message_content: String,
-}
-
-fn default_message_content() -> String {
-    return String::from("@RNotify");
+    message_content: Option<String>,
 }
 
 impl DiscordDestination {
     fn to_discord_message(&self, message: &Message) -> discord_webhook::models::Message {
         let mut discord_msg = discord_webhook::models::Message::new();
-        discord_msg.content(&self.message_content);
+        if let Some(s) = &self.message_content {
+            discord_msg.content(s);
+        }
         discord_msg.embed(|embed| {
             embed.title(message.get_title().as_deref().unwrap_or("Rnotify Notification"));
             let timestamp = Utc::timestamp_millis(&Utc, message.get_unix_timestamp_millis());
