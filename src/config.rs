@@ -62,7 +62,9 @@ pub fn fetch_config_file(verbose: bool, config_file_path: &Option<PathBuf>, defa
         panic!("Home directory does not exist!");
     }
     path_buf.push(default_path);
-    println!("Using config file path: {}", &path_buf.display());
+    if verbose {
+        println!("Using config file path: {}", &path_buf.display());
+    }
 
     if !path_buf.exists() {
         println!("Config file doesn't exist, creating it ({})", &path_buf.display());
