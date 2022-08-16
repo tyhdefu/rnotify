@@ -33,7 +33,7 @@ impl TelegramMessage {
             chat_id,
             text: message,
             disable_notification: false,
-            parse_mode
+            parse_mode,
         }
     }
 }
@@ -47,8 +47,7 @@ impl TelegramDestination {
         if let Some(title) = message.get_title() {
             if html_formatting {
                 content.push_str(&format!(": <b>{}</b>", title));
-            }
-            else {
+            } else {
                 content.push_str(&format!(": {}", title));
             }
         }
@@ -72,7 +71,7 @@ impl TelegramDestination {
                         }
                     }
                 }
-            },
+            }
         }
 
 
@@ -82,15 +81,12 @@ impl TelegramDestination {
         let timestamp_string = timestamp.to_rfc3339_opts(SecondsFormat::Millis, true);
         if html_formatting {
             content.push_str(&format!("<pre>{}</pre>", timestamp_string));
-        }
-        else {
+        } else {
             content.push_str(&timestamp_string);
         }
 
-        if let Some(author) = message.get_author() {
-            content.push('\n');
-            content.push_str(&format!("@ {}", author));
-        }
+        content.push('\n');
+        content.push_str(&format!("@ {}", message.get_author()));
         let parse_mode = if html_formatting { Some(ParseMode::HTML) } else { None };
         TelegramMessage::new(self.chat_id.clone(), content, parse_mode)
     }

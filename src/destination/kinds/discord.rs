@@ -25,9 +25,7 @@ impl DiscordDestination {
             embed.timestamp(&timestamp.to_rfc3339_opts(SecondsFormat::Millis, true));
             let color = get_color_from_level(message.get_level());
             embed.color(&format!("{}", color));
-            if let Some(author) = message.get_author() {
-                embed.author(author, None, None);
-            }
+            embed.author(&format!("{}", message.get_author()), None, None);
 
             match message.get_message_detail() {
                 MessageDetail::Raw(raw) => { embed.description(raw); },

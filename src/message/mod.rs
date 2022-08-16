@@ -2,8 +2,10 @@ use std::fmt::Debug;
 use clap::clap_derive::ValueEnum;
 use message::formatted_detail::FormattedMessageDetail;
 use crate::message;
+use crate::message::author::Author;
 
 pub mod formatted_detail;
+pub mod author;
 
 #[derive(Debug, Clone)]
 pub struct Message {
@@ -11,7 +13,7 @@ pub struct Message {
     title: Option<String>,
     message_detail: MessageDetail,
     component: Option<String>,
-    author: Option<String>,
+    author: Author,
     unix_timestamp_millis: i64,
 }
 
@@ -20,6 +22,7 @@ impl Message {
                message_detail: MessageDetail, component: Option<String>,
                author: Option<String>, unix_timestamp_millis: i64,
     ) -> Self {
+        let author = Author::parse(author.unwrap_or("".to_owned()));
         Self {
             level,
             title,
@@ -46,7 +49,7 @@ impl Message {
         self.unix_timestamp_millis
     }
 
-    pub fn get_author(&self) -> &Option<String> {
+    pub fn get_author(&self) -> &Author {
         &self.author
     }
 
