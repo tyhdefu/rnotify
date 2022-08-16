@@ -30,3 +30,7 @@ http = ["dep:minreq"]
 discord = ["dep:discord-webhook", "http"]
 telegram = ["http"]
 mail = ["dep:lettre"]
+
+[profile.release]
+opt-level = 'z'
+lto = true
