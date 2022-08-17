@@ -1,7 +1,7 @@
 # Rnotify - Notification manager written in rust #
 Rnotify sends notifications to various platforms, such as discord and telegram.
 
-Rnotify reads a configuration file in the home directory, `rnotify.toml`
+Rnotify reads a configuration file in the home directory, `.rnotify.toml`, using the [toml](https://toml.io/) configuration format.
 
 ## Basic Usage ##
 Send a (info) notification to all configured destinations  
