@@ -20,6 +20,24 @@ Send an error notification using stdin as message
 echo "hi" | rnotify -t "Title" -l error
 ```
 
+## Advanced usage ##
+For more detailed notifications we can use formatted option `-f`.
+This allows parsing of sections formatted on a line as `#<Section Name>#`
+*The variables in the echo are created with simple shell commands*
+```console
+echo "
+#<Uptime>#
+Uptime: $uptime
+Today is: $today
+#<Services>#
+- Check scraper service: $checkerservicestatus
+#<Disk Usage>#
+\`\`\`$diskspace\`\`\`" | rnotify -t "Daily hello" -a "cron/dailyhello.sh" -f
+```
+
+Using the formatting option of rnotify, we can create something like this:
+![img.png](discord_notification.png)
+
 ## Configuration file format ##
 
 Example configuration format that logs to a file and sends notifications to discord.
