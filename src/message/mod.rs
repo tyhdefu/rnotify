@@ -1,25 +1,29 @@
+use std::cmp::Ordering;
 use std::fmt::Debug;
 use clap::clap_derive::ValueEnum;
 use message::formatted_detail::FormattedMessageDetail;
+use serde::{Serialize, Deserialize};
 use crate::message;
 use crate::message::author::Author;
+use crate::message::component::Component;
 
 pub mod formatted_detail;
 pub mod author;
+pub mod component;
 
 #[derive(Debug, Clone)]
 pub struct Message {
     level: Level,
     title: Option<String>,
     message_detail: MessageDetail,
-    component: Option<String>,
+    component: Option<Component>,
     author: Author,
     unix_timestamp_millis: i64,
 }
 
 impl Message {
     pub fn new(level: Level, title: Option<String>,
-               message_detail: MessageDetail, component: Option<String>,
+               message_detail: MessageDetail, component: Option<Component>,
                author: Option<String>, unix_timestamp_millis: i64,
     ) -> Self {
         let author = Author::parse(author.unwrap_or("".to_owned()));
@@ -53,7 +57,7 @@ impl Message {
         &self.author
     }
 
-    pub fn get_component(&self) -> &Option<String> {
+    pub fn get_component(&self) -> &Option<Component> {
         &self.component
     }
 }
@@ -77,11 +81,43 @@ impl MessageDetail {
     }
 }
 
-#[derive(Debug, ValueEnum, Clone)]
+#[derive(Debug, ValueEnum, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Level {
     Info,
     Warn,
     Error,
     SelfInfo,
     SelfError,
+}
+
+impl Level {
+    pub fn get_priority(&self) -> u32 {
+        match &self {
+            Level::Info => 1,
+            Level::SelfInfo => 2,
+            Level::Warn => 3,
+            Level::Error => 4,
+            Level::SelfError => 5,
+        }
+    }
+
+    pub fn min() -> Level {
+        Level::Info
+    }
+
+    pub fn max() -> Level {
+        Level::SelfError
+    }
+}
+
+impl PartialOrd<Self> for Level {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Level {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.get_priority().cmp(&other.get_priority())
+    }
 }

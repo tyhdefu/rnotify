@@ -2,6 +2,7 @@ use std::error::Error;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use serde::{Serialize, Deserialize};
 use crate::{http_util, Level};
+use crate::destination::notification_config::NotificationConfigEntry;
 use super::MessageDestination;
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
 use crate::message::{Message, MessageDetail};
@@ -10,15 +11,24 @@ use crate::message::{Message, MessageDetail};
 pub struct DiscordDestination {
     url: String,
     username: Option<String>,
-    message_content: Option<String>,
+    #[serde(default = "Vec::new")]
+    notify: Vec<NotificationConfigEntry<String>>,
 }
 
 impl DiscordDestination {
     fn to_discord_message(&self, message: &Message) -> discord_webhook::models::Message {
         let mut discord_msg = discord_webhook::models::Message::new();
-        if let Some(s) = &self.message_content {
-            discord_msg.content(s);
+
+        let notify_receivers: Vec<String> = self.notify.iter().filter(|n| n.matches(message))
+            .map(|n| n.get_notify())
+            .map(|s| s.to_owned())
+            .collect();
+
+        if !notify_receivers.is_empty() {
+            let content = notify_receivers.join(" ");
+            discord_msg.content(&content);
         }
+
         discord_msg.embed(|embed| {
             embed.title(message.get_title().as_deref().unwrap_or("Rnotify Notification"));
             let timestamp = Utc::timestamp_millis(&Utc, message.get_unix_timestamp_millis());

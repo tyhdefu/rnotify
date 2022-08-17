@@ -4,6 +4,7 @@ use chrono::{Local, SecondsFormat, TimeZone};
 use serde::{Serialize, Deserialize};
 use super::MessageDestination;
 use crate::{http_util, Message};
+use crate::destination::notification_config::NotificationConfigEntry;
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
 use crate::message::MessageDetail;
 
@@ -11,6 +12,8 @@ use crate::message::MessageDetail;
 pub struct TelegramDestination {
     bot_token: String,
     chat_id: String,
+    #[serde(default = "Vec::new")]
+    notify: Vec<NotificationConfigEntry<bool>>,
 }
 
 #[derive(Serialize, Debug)]
@@ -28,11 +31,11 @@ enum ParseMode {
 }
 
 impl TelegramMessage {
-    pub fn new(chat_id: String, message: String, parse_mode: Option<ParseMode>) -> Self {
+    pub fn new(chat_id: String, message: String, notify: bool, parse_mode: Option<ParseMode>) -> Self {
         Self {
             chat_id,
             text: message,
-            disable_notification: false,
+            disable_notification: !notify,
             parse_mode,
         }
     }
@@ -88,7 +91,11 @@ impl TelegramDestination {
         content.push('\n');
         content.push_str(&format!("@ {}", message.get_author()));
         let parse_mode = if html_formatting { Some(ParseMode::HTML) } else { None };
-        TelegramMessage::new(self.chat_id.clone(), content, parse_mode)
+        let notify = self.notify.iter()
+            .filter(|n| n.matches(&message))
+            .map(|n| n.get_notify())
+            .all(|b| *b);
+        TelegramMessage::new(self.chat_id.clone(), content, notify, parse_mode)
     }
 }
 

@@ -44,7 +44,7 @@ fn main() {
         cli.level,
         cli.title,
         message_detail,
-        cli.component,
+        cli.component.as_deref().map(|s| s.into()),
         cli.author,
         timestamp as i64,
     );
