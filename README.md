@@ -36,7 +36,7 @@ Today is: $today
 ```
 
 Using the formatting option of rnotify, we can create something like this:
-![img.png](discord_notification.png)
+![discord notification embed](discord_notification.png)
 
 ## Configuration file format ##
 
