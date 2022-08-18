@@ -16,6 +16,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          target/**/build
+          target/**/deps
+          /usr/local/cargo/bin
+          /usr/local/cargo/registry/index
+          /usr/local/cargo/registry/cache
+          /usr/local/cargo/git/db
+        key: build-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
     - name: Build
       run: cargo build --verbose
     - name: Run tests
