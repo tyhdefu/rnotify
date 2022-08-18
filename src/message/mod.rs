@@ -11,7 +11,7 @@ pub mod formatted_detail;
 pub mod author;
 pub mod component;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Message {
     level: Level,
     title: Option<String>,
@@ -62,7 +62,7 @@ impl Message {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MessageDetail {
     Raw(String),
     Formatted(FormattedMessageDetail),

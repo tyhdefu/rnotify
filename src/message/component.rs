@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use serde::{Serialize, Deserialize, Deserializer, Serializer};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Component {
     parts: Vec<String>,
 }

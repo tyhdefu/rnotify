@@ -1,6 +1,6 @@
 use std::mem;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FormattedMessageDetail {
     raw: String,
     components: Vec<FormattedMessageComponent>,
@@ -23,13 +23,13 @@ impl FormattedMessageDetail {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum FormattedMessageComponent {
     Section(String, Vec<FormattedString>),
     Text(Vec<FormattedString>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FormattedString {
     styles: Vec<Style>,
     s: String,
@@ -52,7 +52,7 @@ impl FormattedString {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Style {
     Bold,
     Italics,

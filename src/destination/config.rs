@@ -40,3 +40,33 @@ impl DestinationConfig {
         }
     }
 }
+
+
+#[cfg(test)]
+mod test {
+    use std::sync::mpsc;
+    use std::sync::mpsc::TryRecvError;
+    use super::*;
+    use crate::{Level, Message};
+    use crate::destination::kinds::rust_receiver::RustReceiverDestination;
+    use crate::message::MessageDetail;
+
+    #[test]
+    pub fn test_send_message() {
+        let (send, recv) = mpsc::channel();
+        let dest = DestinationConfig::new(false,
+                                          DestinationKind::Test(RustReceiverDestination::create(send)),
+                                          None);
+
+        let message = Message::new(Level::Info,
+                                   None, MessageDetail::Raw("hello".to_owned()),
+                                   None, None, 104892);
+
+
+        assert_eq!(recv.try_recv(), Err(TryRecvError::Empty), "Should be empty before we send a message");
+
+        dest.send(&message).expect("Should not fail to send message");
+
+        assert_eq!(recv.try_recv(), Ok(message));
+    }
+}
