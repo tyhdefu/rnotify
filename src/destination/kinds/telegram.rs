@@ -4,7 +4,7 @@ use chrono::{Local, SecondsFormat, TimeZone};
 use serde::{Serialize, Deserialize};
 use super::MessageDestination;
 use crate::{http_util, Message};
-use crate::destination::notification_config::NotificationConfigEntry;
+use crate::destination::message_condition_config::MessageNotifyConditionConfigEntry;
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
 use crate::message::MessageDetail;
 
@@ -13,7 +13,7 @@ pub struct TelegramDestination {
     bot_token: String,
     chat_id: String,
     #[serde(default = "Vec::new")]
-    notify: Vec<NotificationConfigEntry<bool>>,
+    notify: Vec<MessageNotifyConditionConfigEntry<bool>>,
 }
 
 #[derive(Serialize, Debug)]
@@ -94,7 +94,7 @@ impl TelegramDestination {
         let notify = self.notify.iter()
             .filter(|n| n.matches(&message))
             .map(|n| n.get_notify())
-            .all(|b| *b);
+            .any(|b| *b);
         TelegramMessage::new(self.chat_id.clone(), content, notify, parse_mode)
     }
 }

@@ -2,7 +2,7 @@ use std::error::Error;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use serde::{Serialize, Deserialize};
 use crate::{http_util, Level};
-use crate::destination::notification_config::NotificationConfigEntry;
+use crate::destination::message_condition_config::MessageNotifyConditionConfigEntry;
 use super::MessageDestination;
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
 use crate::message::{Message, MessageDetail};
@@ -12,7 +12,7 @@ pub struct DiscordDestination {
     url: String,
     username: Option<String>,
     #[serde(default = "Vec::new")]
-    notify: Vec<NotificationConfigEntry<String>>,
+    notify: Vec<MessageNotifyConditionConfigEntry<String>>,
 }
 
 impl DiscordDestination {

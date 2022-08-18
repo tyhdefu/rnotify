@@ -1,19 +1,18 @@
 use std::fmt::{Display, Formatter};
-use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize, Deserializer, Serializer};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Component {
     parts: Vec<String>,
 }
 
 impl Component {
-    pub fn is_child_of(&self, c: &Component) -> bool {
-        // If the component has more parts than us, then we aren't a child (more specific than/same as it)
-        if self.parts.len() > c.parts.len() {
+    pub fn is_child_of(&self, parent: &Component) -> bool {
+        if parent.parts.len() > self.parts.len()  {
             return false;
         }
-        let l = c.parts.len();
-        self.parts[..l] == c.parts[..l]
+        let l = parent.parts.len() - 1;
+        self.parts[..l] == parent.parts[..l]
     }
 }
 
@@ -22,6 +21,19 @@ impl From<&str> for Component {
         Self {
             parts: s.split("/").map(|s| s.to_owned()).filter(|s| !s.is_empty()).collect()
         }
+    }
+}
+
+impl<'de> Deserialize<'de> for Component {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        let s = String::deserialize(deserializer)?;
+        Ok(s.as_str().into())
+    }
+}
+
+impl Serialize for Component {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.serialize_str(&self.parts.join("/"))
     }
 }
 
@@ -38,12 +50,20 @@ mod tests {
     #[test]
     fn test_child_of() {
         let child: Component = "root/sub/block".into();
-        let parent: Component = "root/sub".into();
-        let parent2: Component = "root/sub/".into();
-        let parent3: Component = "root".into();
+        let parent1: Component = "root".into();
+        let parent2: Component = "root/sub".into();
+        let parent3: Component = "root/sub/".into();
 
-        assert!(child.is_child_of(&parent), "parent");
-        assert!(child.is_child_of(&parent2), "parent2 - trailing /");
-        assert!(child.is_child_of(&parent3), "parent3");
+        should_be_child(&child, &parent1, "basic");
+        should_be_child(&child, &parent2, "depth 2");
+        should_be_child(&child, &parent3, "parent trailing /");
+
+        let parent4: Component = "scraperpi/services".into();
+        let child2: Component = "scraperpi".into();
+        assert!(!child2.is_child_of(&parent4))
+    }
+
+    fn should_be_child(child: &Component, parent: &Component, message: &str) {
+        assert!(child.is_child_of(parent), "{} should be child of: {} - {}", &child, &parent, message);
     }
 }

@@ -23,6 +23,7 @@ pub fn send_message(message: Message, config: &Config) -> Result<(), SendErrors>
 
     let errors: Vec<_> = destinations.iter()
         .enumerate()
+        .filter(|(_i, dest)| dest.should_receive(&message))
         .filter_map(|(i, dest)| dest.send(&message).err()
             .map(|err| (err, i, dest)))
         .collect();

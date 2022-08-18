@@ -12,7 +12,7 @@ use crate::destination::MessageDestination;
 use crate::Message;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(tag = "type")]
+#[serde(tag = "type", deny_unknown_fields)]
 pub enum DestinationKind {
     File(file::FileDestination),
     #[cfg(feature = "discord")]

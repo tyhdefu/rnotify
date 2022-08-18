@@ -33,7 +33,7 @@ impl Default for Config {
         };
         Self {
             destinations: vec![
-                DestinationConfig::new(true, DestinationKind::File(FileDestination::new(log_path)))
+                DestinationConfig::new(true, DestinationKind::File(FileDestination::new(log_path)), None)
             ]
         }
     }
