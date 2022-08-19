@@ -33,8 +33,10 @@ impl DiscordDestination {
             embed.title(message.get_title().as_deref().unwrap_or("Rnotify Notification"));
 
             let timestamp = Utc::timestamp_millis(&Utc, message.get_unix_timestamp_millis());
-            let footer_str = format!("{} @ {}", timestamp.to_rfc3339_opts(SecondsFormat::Millis, true),
-                                     message.get_author());
+            let footer_str = format!("{} @ {}\n{} v{}",
+                                     timestamp.to_rfc3339_opts(SecondsFormat::Millis, true),
+                                     message.get_author(),
+                                     env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
             embed.footer(&footer_str, None);
             let color = get_color_from_level(message.get_level());
             embed.color(&format!("{}", color));
