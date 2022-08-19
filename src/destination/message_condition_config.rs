@@ -21,7 +21,6 @@ pub struct MessageCondition {
 
 impl MessageCondition {
     pub fn matches(&self, m: &Message) -> bool {
-        println!("Matches: {:?}", self);
         if let Some(c) = &self.component {
             if m.get_component().is_none() || !m.get_component().as_ref().unwrap().is_child_of(c) {
                 return false;

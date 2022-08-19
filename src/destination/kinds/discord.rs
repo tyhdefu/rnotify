@@ -31,11 +31,17 @@ impl DiscordDestination {
 
         discord_msg.embed(|embed| {
             embed.title(message.get_title().as_deref().unwrap_or("Rnotify Notification"));
+
             let timestamp = Utc::timestamp_millis(&Utc, message.get_unix_timestamp_millis());
-            embed.timestamp(&timestamp.to_rfc3339_opts(SecondsFormat::Millis, true));
+            let footer_str = format!("{} @ {}", timestamp.to_rfc3339_opts(SecondsFormat::Millis, true),
+                                     message.get_author());
+            embed.footer(&footer_str, None);
             let color = get_color_from_level(message.get_level());
             embed.color(&format!("{}", color));
-            embed.author(&format!("{}", message.get_author()), None, None);
+
+            if let Some(component) = message.get_component() {
+                embed.author(&format!("[{}]", component), None, None);
+            }
 
             match message.get_message_detail() {
                 MessageDetail::Raw(raw) => { embed.description(raw); },
