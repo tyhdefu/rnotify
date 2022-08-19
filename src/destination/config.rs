@@ -5,7 +5,7 @@ use crate::destination::kinds::DestinationKind;
 use crate::destination::message_condition_config::MessageCondition;
 use crate::Message;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct DestinationConfig {
     // Whether errors with sending notifications will be reported to this destination.
     #[serde(default)] // Default false.

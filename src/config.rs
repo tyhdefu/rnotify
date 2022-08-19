@@ -6,7 +6,8 @@ use crate::destination::kinds::DestinationKind;
 use crate::DestinationConfig;
 use crate::destination::kinds::file::FileDestination;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(deny_unknown_fields)]
 pub struct Config {
     destinations: Vec<DestinationConfig>,
 }
@@ -92,4 +93,28 @@ const HOME_DIR_ENVIRONMENT_VARIABLE: &str = "HOME";
 fn get_home_dir() -> String {
     std::env::var(HOME_DIR_ENVIRONMENT_VARIABLE)
         .expect("Failed to find homedir, in order to find config file, try setting the environment variable.")
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use crate::destination::kinds::discord::DiscordDestination;
+    use super::*;
+
+    #[test]
+    fn test_mixed() {
+        let s = fs::read_to_string("test/mixed.toml").expect("Failed to read file");
+        let config: Config = toml::from_str(&s).expect("Failed to deserialize.");
+
+        let file_dest = DestinationKind::File(FileDestination::new(PathBuf::from("/var/log/rnotify.log")));
+        let dsc_dest = DestinationKind::Discord(DiscordDestination::new("https://discord.com/api/webhooks/11111111111111/2aaaaaaaaaaaaaaaaa".to_owned()));
+
+
+        let expected_destinations = vec![
+            DestinationConfig::new(true, file_dest, None),
+            DestinationConfig::new(false, dsc_dest, None),
+        ];
+
+        assert_eq!(config.destinations, expected_destinations);
+    }
 }

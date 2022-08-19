@@ -7,7 +7,7 @@ use super::MessageDestination;
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
 use crate::message::{Message, MessageDetail};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct DiscordDestination {
     url: String,
     username: Option<String>,
@@ -16,6 +16,14 @@ pub struct DiscordDestination {
 }
 
 impl DiscordDestination {
+    pub fn new(url: String) -> Self {
+        Self {
+            url,
+            username: None,
+            notify: vec![]
+        }
+    }
+
     fn to_discord_message(&self, message: &Message) -> discord_webhook::models::Message {
         let mut discord_msg = discord_webhook::models::Message::new();
 
@@ -101,5 +109,27 @@ fn get_color_from_level(level: &Level) -> u32 {
         Level::Error => 0xFF0000,
         Level::SelfError => 0xB30000,
         Level::SelfInfo => 0x964B00,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use crate::destination::kinds::DestinationKind;
+    use crate::destination::kinds::discord::DiscordDestination;
+
+    #[test]
+    fn test_deserialize() {
+        let s = fs::read_to_string("test/discord_example.toml").expect("Should be able to read file");
+        let dest: DestinationKind = toml::from_str(&s).expect("Should deserialize");
+
+        let expected = DiscordDestination::new("https://discord.com/api/webhooks/11111111111111/2aaaaaaaaaaaaaaaaa".to_string());
+
+        if let DestinationKind::Discord(dsc) = dest {
+            assert_eq!(dsc, expected);
+        }
+        else {
+            panic!("Not a discord destination: {:?}", dest);
+        }
     }
 }

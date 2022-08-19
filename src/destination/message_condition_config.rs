@@ -2,14 +2,14 @@ use serde::{Serialize, Deserialize};
 use crate::{Level, Message};
 use crate::message::component::Component;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct MessageNotifyConditionConfigEntry<T> {
     #[serde(flatten)]
     message_condition: MessageCondition,
     notify: T,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct MessageCondition {
     component: Option<Component>,

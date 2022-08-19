@@ -6,7 +6,7 @@ use serde::{Serialize, Deserialize};
 use crate::destination::kinds::MessageDestination;
 use crate::Message;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct MailDestination {
     from: Mailbox,
     relay: Relay,

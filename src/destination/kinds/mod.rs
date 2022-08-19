@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use crate::destination::MessageDestination;
 use crate::Message;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(tag = "type", deny_unknown_fields)]
 pub enum DestinationKind {
     #[cfg(test)]

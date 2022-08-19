@@ -8,7 +8,7 @@ use crate::destination::message_condition_config::MessageNotifyConditionConfigEn
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
 use crate::message::MessageDetail;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct TelegramDestination {
     bot_token: String,
     chat_id: String,

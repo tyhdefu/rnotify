@@ -35,3 +35,9 @@ impl<'de> Deserialize<'de> for RustReceiverDestination {
         panic!("Not possible - testing only")
     }
 }
+
+impl PartialEq for RustReceiverDestination {
+    fn eq(&self, _other: &Self) -> bool {
+        return false;
+    }
+}

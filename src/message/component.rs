@@ -60,7 +60,11 @@ mod tests {
 
         let parent4: Component = "scraperpi/services".into();
         let child2: Component = "scraperpi".into();
-        assert!(!child2.is_child_of(&parent4))
+        assert!(!child2.is_child_of(&parent4));
+
+        let parent4: Component = "heating".into();
+        let child3: Component = "heating/test".into();
+        assert!(child3.is_child_of(&parent4));
     }
 
     fn should_be_child(child: &Component, parent: &Component, message: &str) {
