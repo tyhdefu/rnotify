@@ -11,7 +11,7 @@ impl Component {
         if parent.parts.len() > self.parts.len()  {
             return false;
         }
-        let l = parent.parts.len() - 1;
+        let l = parent.parts.len();
         self.parts[..l] == parent.parts[..l]
     }
 }
@@ -69,5 +69,12 @@ mod tests {
 
     fn should_be_child(child: &Component, parent: &Component, message: &str) {
         assert!(child.is_child_of(parent), "{} should be child of: {} - {}", &child, &parent, message);
+    }
+
+    #[test]
+    fn completely_different() {
+        let child: Component = "aaa".into();
+        let parent: Component = "heating".into();
+        assert!(!child.is_child_of(&parent));
     }
 }

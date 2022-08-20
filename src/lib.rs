@@ -1,10 +1,8 @@
-extern crate core;
-
 use std::collections::HashMap;
 use std::fmt::Debug;
 use senderror::SendErrors;
 use crate::config::Config;
-use crate::destination::config::DestinationConfig;
+use crate::destination::config::{DestinationConfig, MessageRoutingBehaviour};
 use crate::message::{Level, Message};
 
 pub mod message;
@@ -21,12 +19,35 @@ pub fn send_message(message: Message, config: &Config) -> Result<(), SendErrors>
 
     let destinations = config.get_destinations();
 
-    let errors: Vec<_> = destinations.iter()
-        .enumerate()
-        .filter(|(_i, dest)| dest.should_receive(&message))
-        .filter_map(|(i, dest)| dest.send(&message).err()
-            .map(|err| (err, i, dest)))
-        .collect();
+    let mut errors = vec![];
+
+    let mut sent_to_non_root_dest = false;
+
+    for (i, dest) in destinations.iter().enumerate()
+        .filter(|(_i, dest)| dest.get_routing_type() != &MessageRoutingBehaviour::Drain)
+        .filter(|(_i, dest)| dest.should_receive(&message)) {
+
+        match dest.send(&message) {
+            Ok(()) => {
+                if !dest.is_root() {
+                    sent_to_non_root_dest = true;
+                }
+            }
+            Err(err) => errors.push((err, i, dest)),
+        };
+    }
+
+    if !sent_to_non_root_dest {
+        // Find a drain.
+        for (i, dest) in destinations.iter().enumerate()
+            .filter(|(_i, dest)| dest.get_routing_type() == &MessageRoutingBehaviour::Drain)
+            .filter(|(_i, dest)| dest.should_receive(&message)) {
+
+            if let Err(err) = dest.send(&message) {
+                errors.push((err, i, dest))
+            }
+        }
+    }
 
     if errors.is_empty() {
         return Ok(());

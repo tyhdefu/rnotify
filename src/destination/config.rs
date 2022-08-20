@@ -8,18 +8,35 @@ use crate::Message;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct DestinationConfig {
     // Whether errors with sending notifications will be reported to this destination.
-    #[serde(default)] // Default false.
-    root: bool,
+    #[serde(default)]
+    routing_type: MessageRoutingBehaviour,
     #[serde(flatten)]
     dest_type: DestinationKind,
     #[serde(skip_serializing_if = "Option::is_none")]
     applies_to: Option<MessageCondition>,
 }
 
+/// Handles whether messages are routed here / if they will be routed to other destinations.
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+pub enum MessageRoutingBehaviour {
+    /// [crate::message::Level::SelfError] messages in addition to all messages will be sent here.
+    Root,
+    /// Messages will be sent here if they would not be sent elsewhere (excludes [Self::Root] destinations).
+    Drain,
+    /// Messages will be sent here
+    Additive
+}
+
+impl Default for MessageRoutingBehaviour {
+    fn default() -> Self {
+        MessageRoutingBehaviour::Additive
+    }
+}
+
 impl DestinationConfig {
-    pub fn new(root: bool, dest_type: DestinationKind, applies_to: Option<MessageCondition>) -> Self {
+    pub fn new(routing_type: MessageRoutingBehaviour, dest_type: DestinationKind, applies_to: Option<MessageCondition>) -> Self {
         Self {
-            root,
+            routing_type,
             dest_type,
             applies_to,
         }
@@ -30,10 +47,15 @@ impl DestinationConfig {
     }
 
     pub fn is_root(&self) -> bool {
-        self.root
+        self.routing_type == MessageRoutingBehaviour::Root
+    }
+
+    pub fn get_routing_type(&self) -> &MessageRoutingBehaviour {
+        &self.routing_type
     }
 
     pub fn should_receive(&self, m: &Message) -> bool {
+        println!("Checking {:?} vs {:?}", m.get_component(), self.applies_to);
         match &self.applies_to  {
             Some(filter) => filter.matches(m),
             None => true,
@@ -54,7 +76,7 @@ mod test {
     #[test]
     pub fn test_send_message() {
         let (send, recv) = mpsc::channel();
-        let dest = DestinationConfig::new(false,
+        let dest = DestinationConfig::new(Default::default(),
                                           DestinationKind::Test(RustReceiverDestination::create(send)),
                                           None);
 

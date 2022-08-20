@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Write};
 use crate::destination::kinds::DestinationKind;
-use crate::DestinationConfig;
+use crate::{DestinationConfig, MessageRoutingBehaviour};
 use crate::destination::kinds::file::FileDestination;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -34,7 +34,7 @@ impl Default for Config {
         };
         Self {
             destinations: vec![
-                DestinationConfig::new(true, DestinationKind::File(FileDestination::new(log_path)), None)
+                DestinationConfig::new(MessageRoutingBehaviour::Root, DestinationKind::File(FileDestination::new(log_path)), None)
             ]
         }
     }
@@ -43,7 +43,10 @@ impl Default for Config {
 pub fn read_config_file(mut file: File) -> Config {
     let mut s = String::new();
     file.read_to_string(&mut s).expect("Failed to read config file.");
-    toml::from_str(&s).expect("Error parsing config file.")
+    match toml::from_str(&s) {
+        Ok(c) => c,
+        Err(err) => panic!("Error parsing config file:{}", err),
+    }
 }
 
 pub fn fetch_config_file(verbose: bool, config_file_path: &Option<PathBuf>, default_path: &PathBuf) -> File {
@@ -111,8 +114,8 @@ mod tests {
 
 
         let expected_destinations = vec![
-            DestinationConfig::new(true, file_dest, None),
-            DestinationConfig::new(false, dsc_dest, None),
+            DestinationConfig::new(MessageRoutingBehaviour::Root, file_dest, None),
+            DestinationConfig::new(Default::default(), dsc_dest, None),
         ];
 
         assert_eq!(config.destinations, expected_destinations);

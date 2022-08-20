@@ -1,5 +1,5 @@
 [[destinations]]
-root = true
+routing_type = "Root"
 type = "File"
 path = "/var/log/rnotify.log"
 
