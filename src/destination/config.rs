@@ -55,7 +55,6 @@ impl DestinationConfig {
     }
 
     pub fn should_receive(&self, m: &Message) -> bool {
-        println!("Checking {:?} vs {:?}", m.get_component(), self.applies_to);
         match &self.applies_to  {
             Some(filter) => filter.matches(m),
             None => true,
