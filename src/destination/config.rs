@@ -22,9 +22,29 @@ pub enum MessageRoutingBehaviour {
     /// [crate::message::Level::SelfError] messages in addition to all messages will be sent here.
     Root,
     /// Messages will be sent here if they would not be sent elsewhere (excludes [Self::Root] destinations).
+    /// Useful if you want to route "unsorted" messages. A "lazy" destination - checks everything else first.
     Drain,
-    /// Messages will be sent here
+    /// The default option - Messages will be sent here under normal circumstances.
     Additive
+}
+
+impl MessageRoutingBehaviour {
+    pub fn always_send_messages(&self) -> bool {
+        match &self {
+            MessageRoutingBehaviour::Root => true,
+            MessageRoutingBehaviour::Additive => true,
+
+            MessageRoutingBehaviour::Drain => false,
+        }
+    }
+
+    pub fn always_receives_errors(&self) -> bool {
+        match &self {
+            MessageRoutingBehaviour::Root => true,
+            MessageRoutingBehaviour::Drain => false,
+            MessageRoutingBehaviour::Additive => false,
+        }
+    }
 }
 
 impl Default for MessageRoutingBehaviour {

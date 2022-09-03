@@ -19,8 +19,6 @@ fn main() {
         config::read_config_file(file)
     };
 
-    println!("Config {:?}", config);
-
     let message_detail = {
         if cli.message.is_some() {
             cli.message.unwrap()

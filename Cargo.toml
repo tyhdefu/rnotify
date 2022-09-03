@@ -1,7 +1,14 @@
 [package]
 name = "rnotify"
 version = "0.1.0"
+description = "Rnotify allows sending informative messages to various destinations such as Discord, Telegram and Mail through the command line."
 edition = "2021"
+authors = ["James Hendry <jameshendry05+rnotify@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/tyhdefu/rnotify"
+license = "MIT"
+keywords = ["notification"]
+categories = ["command-line-utilities"]
 
 [lib]
 name = "rnotifylib"

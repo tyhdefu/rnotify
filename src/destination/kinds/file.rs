@@ -50,8 +50,13 @@ impl FileDestination {
         if message.get_title().is_some() {
             write!(s, "{} - ", message.get_title().as_ref().unwrap()).unwrap();
         }
-        write!(s, "'{}'", message.get_message_detail().raw()).unwrap();
+        write!(s, "'{}'", inline(message.get_message_detail().raw())).unwrap();
         write!(s, " @ {}", message.get_author()).unwrap();
         s
     }
+}
+
+fn inline(s: &str) -> String {
+    let vec: Vec<_> = s.lines().collect();
+    vec.join("\\n")
 }

@@ -24,7 +24,7 @@ pub fn send_message(message: Message, config: &Config) -> Result<(), SendErrors>
     let mut sent_to_non_root_dest = false;
 
     for (i, dest) in destinations.iter().enumerate()
-        .filter(|(_i, dest)| dest.get_routing_type() != &MessageRoutingBehaviour::Drain)
+        .filter(|(_i, dest)| dest.get_routing_type().always_send_messages())
         .filter(|(_i, dest)| dest.should_receive(&message)) {
 
         match dest.send(&message) {
