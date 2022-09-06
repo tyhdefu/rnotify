@@ -43,6 +43,13 @@ impl FormattedString {
         }
     }
 
+    pub fn plain(s: String) -> Self {
+        Self {
+            s,
+            styles: vec![],
+        }
+    }
+
     pub fn get_styles(&self) -> &Vec<Style> {
         &self.styles
     }

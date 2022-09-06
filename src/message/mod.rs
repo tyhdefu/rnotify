@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::fmt::Debug;
+#[cfg(feature = "clap")]
 use clap::clap_derive::ValueEnum;
 use message::formatted_detail::FormattedMessageDetail;
 use serde::{Serialize, Deserialize};
@@ -24,9 +25,8 @@ pub struct Message {
 impl Message {
     pub fn new(level: Level, title: Option<String>,
                message_detail: MessageDetail, component: Option<Component>,
-               author: Option<String>, unix_timestamp_millis: i64,
+               author: Author, unix_timestamp_millis: i64,
     ) -> Self {
-        let author = Author::parse(author.unwrap_or("".to_owned()));
         Self {
             level,
             title,
@@ -81,7 +81,8 @@ impl MessageDetail {
     }
 }
 
-#[derive(Debug, ValueEnum, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "clap", derive(ValueEnum))]
 pub enum Level {
     Info,
     Warn,

@@ -6,7 +6,7 @@ use crate::destination::kinds::DestinationKind;
 use crate::{DestinationConfig, MessageRoutingBehaviour};
 use crate::destination::kinds::file::FileDestination;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
     destinations: Vec<DestinationConfig>,

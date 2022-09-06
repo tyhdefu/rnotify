@@ -4,6 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use clap::Parser;
 use rnotifylib::{config, message, send_message};
 use rnotifylib::message::{Level, Message, MessageDetail};
+use rnotifylib::message::author::Author;
 
 const CONFIG_FILE_NAME: &str = ".rnotify.toml";
 
@@ -39,13 +40,15 @@ fn main() {
         MessageDetail::Raw(message_detail)
     };
 
+    let author = Author::parse(cli.author.unwrap_or("".to_owned()));
+
     // Construct message.
     let message = Message::new(
         cli.level,
         cli.title,
         message_detail,
         cli.component.as_deref().map(|s| s.into()),
-        cli.author,
+        author,
         timestamp as i64,
     );
 

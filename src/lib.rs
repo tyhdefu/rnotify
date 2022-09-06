@@ -4,6 +4,7 @@ use senderror::SendErrors;
 use crate::config::Config;
 use crate::destination::config::{DestinationConfig, MessageRoutingBehaviour};
 use crate::message::{Level, Message};
+use crate::message::author::Author;
 
 pub mod message;
 pub mod config;
@@ -99,7 +100,7 @@ impl<'a> SendError<'a> {
                      message::MessageDetail::Raw(format!("Rnotify failed to send a message {:?} to destination '{}'. Error: '{}' A notification has been sent here because this is configured as a root logger.",
                                                          self.message, self.item_string, self.err)),
                      None,
-                     None,
+                     Author::parse("rnotify".to_owned()),
                      self.message.get_unix_timestamp_millis().clone(),
         )
     }

@@ -17,9 +17,10 @@ path = "src/lib.rs"
 [[bin]]
 name = "rnotify"
 path = "src/main.rs"
+required-features = ["binary"]
 
 [dependencies]
-clap = { version = "3.2.16", features = ["derive"] }
+clap = { version = "3.2.16", features = ["derive"], optional = true }
 serde = { version = "1.0.142", features = ["derive"]}
 toml = "0.5.9"
 serde_json = "1.0.83"
@@ -33,6 +34,7 @@ lettre = { version = "0.10.1", default-features = false, features = ["serde", "r
 
 [features]
 default = ["discord", "telegram"]
+binary = ["dep:clap"]
 http = ["dep:minreq"]
 
 discord = ["dep:discord-webhook", "http"]

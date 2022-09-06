@@ -88,7 +88,7 @@ mod test {
     use std::sync::mpsc;
     use std::sync::mpsc::TryRecvError;
     use super::*;
-    use crate::{Level, Message};
+    use crate::{Author, Level, Message};
     use crate::destination::kinds::rust_receiver::RustReceiverDestination;
     use crate::message::MessageDetail;
 
@@ -101,7 +101,7 @@ mod test {
 
         let message = Message::new(Level::Info,
                                    None, MessageDetail::Raw("hello".to_owned()),
-                                   None, None, 104892);
+                                   None, Author::parse("test".to_owned()), 104892);
 
 
         assert_eq!(recv.try_recv(), Err(TryRecvError::Empty), "Should be empty before we send a message");
