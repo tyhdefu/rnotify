@@ -36,18 +36,19 @@ pub struct FormattedString {
 }
 
 impl FormattedString {
-    pub fn new(s: String, styles: Vec<Style>) -> Self {
+    pub fn new<S: ToString>(s: S, styles: Vec<Style>) -> Self {
         Self {
-            s,
+            s: s.to_string(),
             styles
         }
     }
 
-    pub fn plain(s: String) -> Self {
-        Self {
-            s,
-            styles: vec![],
-        }
+    pub fn plain<S: ToString>(s: S) -> Self {
+        Self::new(s, vec![])
+    }
+
+    pub fn styled<S: ToString>(s: S, style: Style) -> Self {
+        Self::new(s, vec![style])
     }
 
     pub fn get_styles(&self) -> &Vec<Style> {
@@ -64,6 +65,7 @@ pub enum Style {
     Bold,
     Italics,
     Monospace,
+    Code{ lang: String }
 }
 
 pub fn parse_raw_to_formatted(s: &str) -> FormattedMessageDetail {

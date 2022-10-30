@@ -1,6 +1,6 @@
 [package]
 name = "rnotify"
-version = "0.1.1"
+version = "0.1.2"
 description = "Rnotify allows sending informative messages to various destinations such as Discord, Telegram and Mail through the command line."
 edition = "2021"
 authors = ["James Hendry <jameshendry05+rnotify@gmail.com>"]

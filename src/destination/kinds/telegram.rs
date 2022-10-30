@@ -123,5 +123,6 @@ fn apply_style(s: &str, style: &Style) -> String {
         Style::Bold => format!("*{}*", s),
         Style::Italics => format!("_{}_", s),
         Style::Monospace => format!("`{}`", s),
+        Style::Code { lang } => format!("```{}```", s),
     }
 }

@@ -11,6 +11,7 @@ use crate::message::component::Component;
 pub mod formatted_detail;
 pub mod author;
 pub mod component;
+pub mod message_detail_builder;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Message {
