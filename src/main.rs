@@ -6,8 +6,6 @@ use rnotifylib::{config, message, send_message};
 use rnotifylib::message::{Level, Message, MessageDetail};
 use rnotifylib::message::author::Author;
 
-const CONFIG_FILE_NAME: &str = ".rnotify.toml";
-
 fn main() {
     // TODO: Allow configuration of timezone.
     let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)
@@ -16,7 +14,7 @@ fn main() {
     let cli: Cli = Cli::parse();
 
     let config = {
-        let file = config::fetch_config_file(cli.verbose, &cli.config_file, &PathBuf::from(CONFIG_FILE_NAME));
+        let file = config::fetch_config_file(cli.verbose, &cli.config_file);
         config::read_config_file(file)
     };
 

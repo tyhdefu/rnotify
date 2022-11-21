@@ -6,6 +6,8 @@ use crate::destination::kinds::DestinationKind;
 use crate::{DestinationConfig, MessageRoutingBehaviour};
 use crate::destination::kinds::file::FileDestination;
 
+const CONFIG_FILE_NAME: &str = ".rnotify.toml";
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
@@ -49,23 +51,13 @@ pub fn read_config_file(mut file: File) -> Config {
     }
 }
 
-pub fn fetch_config_file(verbose: bool, config_file_path: &Option<PathBuf>, default_path: &PathBuf) -> File {
+pub fn fetch_config_file(verbose: bool, config_file_path: &Option<PathBuf>) -> File {
     if config_file_path.is_some() {
         return File::options().read(true).open(config_file_path.as_ref().unwrap())
             .expect(&format!("Failed to open config file provided by argument for reading, {:?}", config_file_path));
     }
 
-    let home_dir_path = get_home_dir();
-    if verbose {
-        println!("HomeDir: '{}'", home_dir_path);
-    }
-
-    let mut path_buf: PathBuf = home_dir_path.into();
-
-    if !path_buf.exists() {
-        panic!("Home directory does not exist!");
-    }
-    path_buf.push(default_path);
+    let path_buf = get_default_config_path();
     if verbose {
         println!("Using config file path: {}", &path_buf.display());
     }
@@ -96,6 +88,12 @@ const HOME_DIR_ENVIRONMENT_VARIABLE: &str = "HOME";
 fn get_home_dir() -> String {
     std::env::var(HOME_DIR_ENVIRONMENT_VARIABLE)
         .expect("Failed to find homedir, in order to find config file, try setting the environment variable.")
+}
+
+pub fn get_default_config_path() -> PathBuf {
+    let mut path: PathBuf = get_home_dir().into();
+    path.push(CONFIG_FILE_NAME);
+    path
 }
 
 #[cfg(test)]
