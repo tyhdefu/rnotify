@@ -3,12 +3,18 @@ use crate::message::MessageDetail;
 
 pub struct MessageDetailBuilder {
     contents: Vec<FormattedMessageComponent>,
+    raw: String,
 }
 
 impl MessageDetailBuilder {
     pub fn new() -> Self {
+        Self::with_raw(String::from("Raw not available"))
+    }
+
+    pub fn with_raw(raw: String) -> Self {
         Self {
             contents: vec![],
+            raw,
         }
     }
 
@@ -30,7 +36,7 @@ impl MessageDetailBuilder {
     }
 
     pub fn build(self) -> MessageDetail {
-        MessageDetail::Formatted(FormattedMessageDetail::new(String::from("Raw not available"), self.contents))
+        MessageDetail::Formatted(FormattedMessageDetail::new(self.raw, self.contents))
     }
 }
 
