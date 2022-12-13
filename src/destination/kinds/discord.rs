@@ -91,10 +91,7 @@ fn apply_style(s: &str, style: &Style) -> String {
         Style::Bold => format!("**{}**", s),
         Style::Italics => format!("_{}_", s),
         Style::Monospace => {
-            if s.is_empty() {
-                return String::new();
-            }
-            if s.contains('\n') {
+            if s.is_empty() || s.contains('\n') {
                 format!("```\n{}\n```", s);
             }
             format!("`{}`", s)
