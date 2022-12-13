@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::fmt::Debug;
-#[cfg(feature = "clap")]
-use clap::clap_derive::ValueEnum;
+#[cfg(feature = "binary")]
+use clap::clap_derive::ArgEnum;
 use message::formatted_detail::FormattedMessageDetail;
 use serde::{Serialize, Deserialize};
 use crate::message;
@@ -83,7 +83,7 @@ impl MessageDetail {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "clap", derive(ValueEnum))]
+#[cfg_attr(feature = "binary", derive(clap::ArgEnum))]
 pub enum Level {
     Info,
     Warn,

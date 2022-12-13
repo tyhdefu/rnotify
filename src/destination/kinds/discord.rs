@@ -90,7 +90,15 @@ fn apply_style(s: &str, style: &Style) -> String {
     match style {
         Style::Bold => format!("**{}**", s),
         Style::Italics => format!("_{}_", s),
-        Style::Monospace => format!("`{}`", s),
+        Style::Monospace => {
+            if s.is_empty() {
+                return String::new();
+            }
+            if s.contains('\n') {
+                format!("```\n{}\n```", s);
+            }
+            format!("`{}`", s)
+        },
         Style::Code { lang} => format!("```{}\n{}```", lang, s),
     }
 }

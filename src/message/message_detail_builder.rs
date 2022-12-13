@@ -56,6 +56,11 @@ impl SectionBuilder {
         self
     }
 
+    pub fn append_plain<S: ToString>(&mut self, s: S) -> &mut Self {
+        self.contents.push(FormattedString::plain(s));
+        self
+    }
+
     pub fn build(self) -> FormattedMessageComponent {
         FormattedMessageComponent::Section(self.name, self.contents)
     }

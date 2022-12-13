@@ -45,7 +45,7 @@ impl Display for SendErrors {
         writeln!(f, "Summary:")?;
         writeln!(f, "Failed to send to {} destinations", self.errors.len())?;
         writeln!(f, "Message: {:?}", self.original_message)?;
-        let any_root_fails = self.errors.iter().any(|err| !err.failed_root_indices.is_empty());
+        let any_root_fails = self.errors.iter().any(|err| err.dest.is_root() || !err.failed_root_indices.is_empty());
         if any_root_fails {
             writeln!(f, "Some errors failed to be reported to root destinations.")?;
             writeln!(f, "Root destination index reference:")?;
