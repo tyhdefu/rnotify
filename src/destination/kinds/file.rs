@@ -6,8 +6,8 @@ use std::fmt::{Debug, Write};
 use std::fs;
 use std::io::Write as IoWrite;
 use chrono::{Local, SecondsFormat, TimeZone};
+use crate::destination::{MessageDestination, SerializableDestination};
 use crate::message::Message;
-use super::MessageDestination;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct FileDestination {
@@ -29,6 +29,13 @@ impl MessageDestination for FileDestination {
 
         writeln!(&mut file, "{}", s)?;
         Ok(())
+    }
+}
+
+#[typetag::serde(name = "File")]
+impl SerializableDestination for FileDestination {
+    fn as_message_destination(&self) -> &dyn MessageDestination {
+        self
     }
 }
 

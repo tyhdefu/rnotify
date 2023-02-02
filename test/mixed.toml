@@ -1,8 +1,10 @@
 [[destinations]]
 routing_type = "Root"
 type = "File"
+id = "log_file"
 path = "/var/log/rnotify.log"
 
 [[destinations]]
 type = "Discord"
+id = "discord_destination"
 url = "https://discord.com/api/webhooks/11111111111111/2aaaaaaaaaaaaaaaaa"

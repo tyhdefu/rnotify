@@ -4,6 +4,7 @@ use lettre::{SmtpTransport, Transport};
 use lettre::transport::smtp::authentication;
 use serde::{Serialize, Deserialize};
 use crate::destination::kinds::MessageDestination;
+use crate::destination::{MessageDestination, SerializableDestination};
 use crate::Message;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -54,5 +55,12 @@ impl MessageDestination for MailDestination {
         mailer.send(&email)?;
         println!("Mail successfully sent.");
         Ok(())
+    }
+}
+
+#[typetag::serde(name = "Mail")]
+impl SerializableDestination for MailDestination {
+    fn as_message_destination(&self) -> &dyn MessageDestination {
+        self
     }
 }

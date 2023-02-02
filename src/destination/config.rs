@@ -1,19 +1,77 @@
 use std::error::Error;
 use std::fmt::Debug;
 use serde::{Deserialize, Serialize};
-use crate::destination::kinds::DestinationKind;
-use crate::destination::message_condition_config::MessageCondition;
-use crate::Message;
+use crate::destination::MessageDestination;
+use crate::message::Message;
+use crate::message_router::RoutingInfo;
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct DestinationConfig {
+pub trait RoutedDestination {
+    /// The id provides an identifier
+    /// for error reporting.
+    fn get_id(&self) -> &str;
+
+    /// The message destination that messages will
+    /// can be sent to.
+    fn get_destination(&self) -> &dyn MessageDestination;
+
+    /// The routing requirements of this destination.
+    fn get_routing_info(&self) -> &RoutingInfo;
+
+    fn send(&self, message: &Message) -> Result<(), Box<dyn Error>> {
+        self.get_destination().send(message)
+    }
+
+    fn is_root(&self) -> bool {
+        self.get_routing_info().get_routing_behaviour() == &MessageRoutingBehaviour::Root
+    }
+
+    fn get_routing_type(&self) -> &MessageRoutingBehaviour {
+        &self.get_routing_info().get_routing_behaviour()
+    }
+
+    fn should_receive(&self, m: &Message) -> bool {
+        self.get_routing_info().applies_to(m)
+    }
+}
+
+#[derive(Debug)]
+pub struct RoutedDestinationBase {
+    id: String,
     // Whether errors with sending notifications will be reported to this destination.
-    #[serde(default)]
-    routing_type: MessageRoutingBehaviour,
-    #[serde(flatten)]
-    dest_type: DestinationKind,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    applies_to: Option<MessageCondition>,
+    destination: Box<dyn MessageDestination>,
+    routing_info: RoutingInfo,
+}
+
+impl RoutedDestinationBase {
+    pub fn new(id: String, destination: Box<dyn MessageDestination>, routing_info: RoutingInfo) -> Self {
+        Self {
+            id,
+            destination,
+            routing_info,
+        }
+    }
+
+    pub fn create<M: MessageDestination + 'static>(id: String, destination: M, routing_info: RoutingInfo) -> Self {
+        Self {
+            id,
+            destination: Box::new(destination),
+            routing_info,
+        }
+    }
+}
+
+impl RoutedDestination for RoutedDestinationBase {
+    fn get_id(&self) -> &str {
+        &self.id
+    }
+
+    fn get_destination(&self) -> &dyn MessageDestination {
+        &*self.destination
+    }
+
+    fn get_routing_info(&self) -> &RoutingInfo {
+        &self.routing_info
+    }
 }
 
 /// Handles whether messages are routed here / if they will be routed to other destinations.
@@ -53,35 +111,6 @@ impl Default for MessageRoutingBehaviour {
     }
 }
 
-impl DestinationConfig {
-    pub fn new(routing_type: MessageRoutingBehaviour, dest_type: DestinationKind, applies_to: Option<MessageCondition>) -> Self {
-        Self {
-            routing_type,
-            dest_type,
-            applies_to,
-        }
-    }
-
-    pub fn send(&self, message: &Message) -> Result<(), Box<dyn Error>> {
-        self.dest_type.send_to_destination(message)
-    }
-
-    pub fn is_root(&self) -> bool {
-        self.routing_type == MessageRoutingBehaviour::Root
-    }
-
-    pub fn get_routing_type(&self) -> &MessageRoutingBehaviour {
-        &self.routing_type
-    }
-
-    pub fn should_receive(&self, m: &Message) -> bool {
-        match &self.applies_to  {
-            Some(filter) => filter.matches(m),
-            None => true,
-        }
-    }
-}
-
 
 #[cfg(test)]
 mod test {
@@ -90,14 +119,12 @@ mod test {
     use super::*;
     use crate::{Author, Level, Message};
     use crate::destination::kinds::rust_receiver::RustReceiverDestination;
-    use crate::message::MessageDetail;
+    use crate::message::{Level, MessageDetail};
 
     #[test]
     pub fn test_send_message() {
         let (send, recv) = mpsc::channel();
-        let dest = DestinationConfig::new(Default::default(),
-                                          DestinationKind::Test(RustReceiverDestination::create(send)),
-                                          None);
+        let dest = RoutedDestinationBase::create("test".to_owned(), RustReceiverDestination::create(send), RoutingInfo::root());
 
         let message = Message::new(Level::Info,
                                    None, MessageDetail::Raw("hello".to_owned()),

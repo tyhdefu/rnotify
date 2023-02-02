@@ -2,9 +2,10 @@ use std::io::Read;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use clap::Parser;
-use rnotifylib::{config, message, send_message};
+use rnotifylib::{config, message};
 use rnotifylib::message::{Level, Message, MessageDetail};
 use rnotifylib::message::author::Author;
+use rnotifylib::message_router::MessageRouter;
 
 fn main() {
     // TODO: Allow configuration of timezone.
@@ -54,7 +55,9 @@ fn main() {
         println!("Message: {:?}", message);
     }
 
-    let result = send_message(message, &config);
+    let router = MessageRouter::from_config(config);
+
+    let result = router.route(&message);
     if result.is_ok() {
         return;
     }

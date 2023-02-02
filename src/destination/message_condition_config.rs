@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
-use crate::{Level, Message};
 use crate::message::component::Component;
+use crate::message::{Level, Message};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct MessageNotifyConditionConfigEntry<T> {

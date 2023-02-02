@@ -1,7 +1,5 @@
 use std::cmp::Ordering;
 use std::fmt::Debug;
-#[cfg(feature = "binary")]
-use clap::clap_derive::ArgEnum;
 use message::formatted_detail::FormattedMessageDetail;
 use serde::{Serialize, Deserialize};
 use crate::message;

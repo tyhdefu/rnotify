@@ -2,11 +2,11 @@ use std::error::Error;
 use std::fmt::Debug;
 use chrono::{Local, SecondsFormat, TimeZone};
 use serde::{Serialize, Deserialize};
-use super::MessageDestination;
-use crate::{http_util, Message};
+use crate::http_util;
 use crate::destination::message_condition_config::MessageNotifyConditionConfigEntry;
+use crate::destination::{MessageDestination, SerializableDestination};
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
-use crate::message::MessageDetail;
+use crate::message::{Message, MessageDetail};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct TelegramDestination {
@@ -110,6 +110,13 @@ impl MessageDestination for TelegramDestination {
     }
 }
 
+#[typetag::serde(name = "Telegram")]
+impl SerializableDestination for TelegramDestination {
+    fn as_message_destination(&self) -> &dyn MessageDestination {
+        self
+    }
+}
+
 fn to_tg_format(formatted_string: &FormattedString) -> String {
     let mut result = String::from(formatted_string.get_string());
     for style in formatted_string.get_styles() {
@@ -123,6 +130,6 @@ fn apply_style(s: &str, style: &Style) -> String {
         Style::Bold => format!("*{}*", s),
         Style::Italics => format!("_{}_", s),
         Style::Monospace => format!("`{}`", s),
-        Style::Code { lang } => format!("```{}```", s),
+        Style::Code { lang: _ } => format!("```{}```", s),
     }
 }

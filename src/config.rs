@@ -2,21 +2,69 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Write};
-use crate::destination::kinds::DestinationKind;
-use crate::{DestinationConfig, MessageRoutingBehaviour};
+use crate::destination::config::RoutedDestination;
 use crate::destination::kinds::file::FileDestination;
+use crate::destination::{MessageDestination, SerializableDestination};
+use crate::message_router::RoutingInfo;
 
 const CONFIG_FILE_NAME: &str = ".rnotify.toml";
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
-    destinations: Vec<DestinationConfig>,
+    destinations: Vec<SerializableRoutedDestination>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SerializableRoutedDestination {
+    id: String,
+    // Whether errors with sending notifications will be reported to this destination.
+    #[serde(flatten)]
+    destination: Box<dyn SerializableDestination>,
+    #[serde(flatten)]
+    routing_info: RoutingInfo,
+}
+
+impl SerializableRoutedDestination {
+
+    pub fn new(id: String, destination: Box<dyn SerializableDestination>, routing_info: RoutingInfo) -> Self {
+        Self {
+            id,
+            destination,
+            routing_info,
+        }
+    }
+
+    pub fn create<D: SerializableDestination + 'static>(id: String, destination: D, routing_info: RoutingInfo) -> Self {
+        Self {
+            id,
+            destination: Box::new(destination),
+            routing_info
+        }
+    }
+}
+
+impl RoutedDestination for SerializableRoutedDestination {
+    fn get_id(&self) -> &str {
+        &self.id
+    }
+
+    fn get_destination(&self) -> &dyn MessageDestination {
+        self.destination.as_message_destination()
+    }
+
+    fn get_routing_info(&self) -> &RoutingInfo {
+        &self.routing_info
+    }
 }
 
 impl Config {
-    pub fn get_destinations(&self) -> &Vec<DestinationConfig> {
+    pub fn get_destinations(&self) -> &Vec<SerializableRoutedDestination> {
         &self.destinations
+    }
+
+    pub fn take_destinations(self) -> Vec<SerializableRoutedDestination> {
+        self.destinations
     }
 }
 
@@ -36,7 +84,7 @@ impl Default for Config {
         };
         Self {
             destinations: vec![
-                DestinationConfig::new(MessageRoutingBehaviour::Root, DestinationKind::File(FileDestination::new(log_path)), None)
+                SerializableRoutedDestination::create("file_log".to_owned(), FileDestination::new(log_path), RoutingInfo::root()),
             ]
         }
     }
@@ -107,15 +155,17 @@ mod tests {
         let s = fs::read_to_string("test/mixed.toml").expect("Failed to read file");
         let config: Config = toml::from_str(&s).expect("Failed to deserialize.");
 
-        let file_dest = DestinationKind::File(FileDestination::new(PathBuf::from("/var/log/rnotify.log")));
-        let dsc_dest = DestinationKind::Discord(DiscordDestination::new("https://discord.com/api/webhooks/11111111111111/2aaaaaaaaaaaaaaaaa".to_owned()));
+        let file_dest = FileDestination::new(PathBuf::from("/var/log/rnotify.log"));
+        let dsc_dest = DiscordDestination::new("https://discord.com/api/webhooks/11111111111111/2aaaaaaaaaaaaaaaaa".to_owned());
 
 
-        let expected_destinations = vec![
-            DestinationConfig::new(MessageRoutingBehaviour::Root, file_dest, None),
-            DestinationConfig::new(Default::default(), dsc_dest, None),
-        ];
+        let log_file = RoutedDestinationBase::create("log_file".to_owned(), file_dest, RoutingInfo::root());
+        let dsc = RoutedDestinationBase::create("discord_destination".to_owned(), dsc_dest, RoutingInfo::of(MessageRoutingBehaviour::Additive));
 
-        assert_eq!(config.destinations, expected_destinations);
+        assert_eq!(config.destinations[0].get_id(), log_file.get_id());
+        assert_eq!(config.destinations[0].get_routing_info(), log_file.get_routing_info());
+
+        assert_eq!(config.destinations[1].get_id(), dsc.get_id());
+        assert_eq!(config.destinations[1].get_routing_info(), dsc.get_routing_info());
     }
 }

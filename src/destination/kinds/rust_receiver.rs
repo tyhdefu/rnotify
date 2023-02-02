@@ -17,6 +17,7 @@ impl RustReceiverDestination {
     }
 }
 
+
 impl MessageDestination for RustReceiverDestination {
     fn send(&self, message: &Message) -> Result<(), Box<dyn Error>> {
         self.sender.send(message.clone())?;

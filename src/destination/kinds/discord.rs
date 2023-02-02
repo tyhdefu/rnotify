@@ -1,11 +1,11 @@
 use std::error::Error;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use serde::{Serialize, Deserialize};
-use crate::{http_util, Level};
+use crate::http_util;
 use crate::destination::message_condition_config::MessageNotifyConditionConfigEntry;
-use super::MessageDestination;
+use crate::destination::{MessageDestination, SerializableDestination};
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
-use crate::message::{Message, MessageDetail};
+use crate::message::{Level, Message, MessageDetail};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct DiscordDestination {
@@ -108,6 +108,13 @@ impl MessageDestination for DiscordDestination {
     }
 }
 
+#[typetag::serde(name = "Discord")]
+impl SerializableDestination for DiscordDestination {
+    fn as_message_destination(&self) -> &dyn MessageDestination {
+        self
+    }
+}
+
 fn get_color_from_level(level: &Level) -> u32 {
     match level {
         Level::Info => 0x00F4D0,
@@ -121,21 +128,16 @@ fn get_color_from_level(level: &Level) -> u32 {
 #[cfg(test)]
 mod tests {
     use std::fs;
-    use crate::destination::kinds::DestinationKind;
+    use crate::destination::config::RoutedDestinationBase;
     use crate::destination::kinds::discord::DiscordDestination;
 
     #[test]
     fn test_deserialize() {
         let s = fs::read_to_string("test/discord_example.toml").expect("Should be able to read file");
-        let dest: DestinationKind = toml::from_str(&s).expect("Should deserialize");
+        let dest: DiscordDestination = toml::from_str(&s).expect("Should deserialize");
 
         let expected = DiscordDestination::new("https://discord.com/api/webhooks/11111111111111/2aaaaaaaaaaaaaaaaa".to_string());
 
-        if let DestinationKind::Discord(dsc) = dest {
-            assert_eq!(dsc, expected);
-        }
-        else {
-            panic!("Not a discord destination: {:?}", dest);
-        }
+        assert_eq!(dest, expected);
     }
 }
