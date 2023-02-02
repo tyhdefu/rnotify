@@ -56,6 +56,7 @@ impl<'a> Display for SendErrors<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "-----")?;
         writeln!(f, "Summary:")?;
+        writeln!(f, "Successfully sent to {} destinations", self.successfully_sent)?;
         writeln!(f, "Failed to send to {} destinations", self.errors.len())?;
         writeln!(f, "Message: {:?}", self.original_message)?;
 

@@ -34,6 +34,45 @@ pub trait RoutedDestination {
     }
 }
 
+/// Handles whether messages are routed here / if they will be routed to other destinations.
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+pub enum MessageRoutingBehaviour {
+    /// [crate::message::Level::SelfError] messages in addition to all messages will be sent here.
+    Root,
+    /// Messages will be sent here if they would not be sent elsewhere (excludes [Self::Root] destinations).
+    /// Useful if you want to route "unsorted" messages. A "lazy" destination - checks everything else first.
+    Drain,
+    /// The default option - Messages will be sent here under normal circumstances.
+    Additive
+}
+
+impl MessageRoutingBehaviour {
+    pub fn always_send_messages(&self) -> bool {
+        match &self {
+            MessageRoutingBehaviour::Root => true,
+            MessageRoutingBehaviour::Additive => true,
+
+            MessageRoutingBehaviour::Drain => false,
+        }
+    }
+
+    pub fn always_receives_errors(&self) -> bool {
+        match &self {
+            MessageRoutingBehaviour::Root => true,
+            MessageRoutingBehaviour::Drain => false,
+            MessageRoutingBehaviour::Additive => false,
+        }
+    }
+}
+
+impl Default for MessageRoutingBehaviour {
+    fn default() -> Self {
+        MessageRoutingBehaviour::Additive
+    }
+}
+
+// Implementations //
+
 #[derive(Debug)]
 pub struct RoutedDestinationBase {
     id: String,
@@ -74,52 +113,15 @@ impl RoutedDestination for RoutedDestinationBase {
     }
 }
 
-/// Handles whether messages are routed here / if they will be routed to other destinations.
-#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
-pub enum MessageRoutingBehaviour {
-    /// [crate::message::Level::SelfError] messages in addition to all messages will be sent here.
-    Root,
-    /// Messages will be sent here if they would not be sent elsewhere (excludes [Self::Root] destinations).
-    /// Useful if you want to route "unsorted" messages. A "lazy" destination - checks everything else first.
-    Drain,
-    /// The default option - Messages will be sent here under normal circumstances.
-    Additive
-}
-
-impl MessageRoutingBehaviour {
-    pub fn always_send_messages(&self) -> bool {
-        match &self {
-            MessageRoutingBehaviour::Root => true,
-            MessageRoutingBehaviour::Additive => true,
-
-            MessageRoutingBehaviour::Drain => false,
-        }
-    }
-
-    pub fn always_receives_errors(&self) -> bool {
-        match &self {
-            MessageRoutingBehaviour::Root => true,
-            MessageRoutingBehaviour::Drain => false,
-            MessageRoutingBehaviour::Additive => false,
-        }
-    }
-}
-
-impl Default for MessageRoutingBehaviour {
-    fn default() -> Self {
-        MessageRoutingBehaviour::Additive
-    }
-}
-
 
 #[cfg(test)]
 mod test {
     use std::sync::mpsc;
     use std::sync::mpsc::TryRecvError;
     use super::*;
-    use crate::{Author, Level, Message};
     use crate::destination::kinds::rust_receiver::RustReceiverDestination;
     use crate::message::{Level, MessageDetail};
+    use crate::message::author::Author;
 
     #[test]
     pub fn test_send_message() {

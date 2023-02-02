@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use crate::message::Message;
 
-pub mod config;
+pub mod routed_destination;
 pub mod kinds;
 pub mod message_condition_config;
 

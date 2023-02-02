@@ -6,6 +6,7 @@ use rnotifylib::{config, message};
 use rnotifylib::message::{Level, Message, MessageDetail};
 use rnotifylib::message::author::Author;
 use rnotifylib::message_router::MessageRouter;
+use rnotifylib::send_error::SendErrors;
 
 fn main() {
     // TODO: Allow configuration of timezone.
@@ -58,6 +59,13 @@ fn main() {
     let router = MessageRouter::from_config(config);
 
     let result = router.route(&message);
+
+    match result {
+        Ok(send_count) => {
+            println!("Message sent to {} destination{}", send_count, if send_count > 1 { "s" } else { "" } )
+        }
+        Err(_) => {}
+    }
     if result.is_ok() {
         return;
     }

@@ -128,7 +128,6 @@ fn get_color_from_level(level: &Level) -> u32 {
 #[cfg(test)]
 mod tests {
     use std::fs;
-    use crate::destination::config::RoutedDestinationBase;
     use crate::destination::kinds::discord::DiscordDestination;
 
     #[test]

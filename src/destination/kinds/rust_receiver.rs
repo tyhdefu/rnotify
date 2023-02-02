@@ -2,7 +2,7 @@ use std::error::Error;
 use std::sync::mpsc::Sender;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use crate::destination::MessageDestination;
-use crate::Message;
+use crate::message::Message;
 
 #[derive(Debug, Clone)]
 pub struct RustReceiverDestination {

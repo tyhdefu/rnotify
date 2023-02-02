@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Write};
-use crate::destination::config::RoutedDestination;
+use crate::destination::routed_destination::RoutedDestination;
 use crate::destination::kinds::file::FileDestination;
 use crate::destination::{MessageDestination, SerializableDestination};
 use crate::message_router::RoutingInfo;
@@ -148,6 +148,7 @@ pub fn get_default_config_path() -> PathBuf {
 mod tests {
     use std::fs;
     use crate::destination::kinds::discord::DiscordDestination;
+    use crate::destination::routed_destination::{MessageRoutingBehaviour, RoutedDestinationBase};
     use super::*;
 
     #[test]
