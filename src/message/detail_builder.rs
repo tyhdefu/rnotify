@@ -32,7 +32,12 @@ impl MessageDetailBuilder {
         }
     }
 
-    pub fn section<F, S>(mut self, name: S, apply: F) -> Self
+    pub fn raw(&mut self, raw: String) -> &mut Self {
+        self.raw = raw;
+        self
+    }
+
+    pub fn section<F, S>(&mut self, name: S, apply: F) -> &mut Self
         where F: FnOnce(&mut SectionBuilder),
               S: ToString {
         let mut section = SectionBuilder {
@@ -44,7 +49,7 @@ impl MessageDetailBuilder {
         self
     }
 
-    pub fn text_block<F>(mut self, apply: F) -> Self
+    pub fn text_block<F>(&mut self, apply: F) -> &mut Self
         where F: FnOnce(&mut TextBlockBuilder) {
         let mut text_block = TextBlockBuilder::default();
         apply(&mut text_block);
@@ -100,19 +105,20 @@ impl FormattedStringAppendable for SectionBuilder {
 #[cfg(test)]
 mod test {
     use crate::message::formatted_detail::{FormattedMessageComponent, FormattedMessageDetail, FormattedString, Style};
-    use crate::message::message_detail_builder::{FormattedStringAppendable, MessageDetailBuilder};
+    use crate::message::detail_builder::{FormattedStringAppendable, MessageDetailBuilder};
     use crate::message::MessageDetail;
 
     #[test]
     fn test_detail_builder() {
-        let built = MessageDetailBuilder::new()
-            .text_block(|block| {
+        let mut builder = MessageDetailBuilder::new();
+        builder.text_block(|block| {
                 block.append_plain("Base Description");
             })
             .section("New section", |section| {
                 section.append_styled("hello", Style::Monospace);
-            })
-            .build();
+            });
+
+        let built = builder.build();
 
         let test = MessageDetail::Formatted(FormattedMessageDetail::new(
             "Raw not available".to_string(),

@@ -6,18 +6,34 @@ pub struct Author {
 }
 
 impl Author {
-    pub fn parse(s: String) -> Author {
-        let mut vec: Vec<String> = s.split("/").into_iter().filter(|s| !s.is_empty()).map(|s| s.to_owned()).collect();
-        match hostname::get() {
-            Ok(hostname) => vec.insert(0, hostname.to_string_lossy().into()),
-            Err(e) => {
-                vec.insert(0, "?".to_owned());
-                eprintln!("Failed to detect hostname {}", e);
-            },
+    pub fn parse(parts: String) -> Author {
+        let mut new = Self::base();
+        new.extend(parts);
+        new
+    }
+
+    pub fn base() -> Author {
+        let base = match hostname::get() {
+            Ok(hostname) => {
+                hostname.to_string_lossy().to_string()
+            }
+            Err(_) => {
+                "?".to_owned()
+            }
+        };
+
+        Author {
+            parts: vec![base],
         }
-        Self {
-            parts: vec
-        }
+    }
+
+    pub fn extend(&mut self, parts: String) {
+        let vec: Vec<String> = parts.split("/").into_iter()
+            .filter(|s| !s.is_empty())
+            .map(|s| s.to_owned())
+            .collect();
+
+        self.parts.extend(vec);
     }
 }
 

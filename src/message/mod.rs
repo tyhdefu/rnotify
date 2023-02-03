@@ -9,7 +9,8 @@ use crate::message::component::Component;
 pub mod formatted_detail;
 pub mod author;
 pub mod component;
-pub mod message_detail_builder;
+pub mod builder;
+pub mod detail_builder;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Message {
@@ -80,6 +81,12 @@ impl MessageDetail {
     }
 }
 
+impl Default for MessageDetail {
+    fn default() -> Self {
+        Self::Raw(String::new())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "binary", derive(clap::ArgEnum))]
 pub enum Level {
@@ -90,14 +97,20 @@ pub enum Level {
     SelfError,
 }
 
+impl Default for Level {
+    fn default() -> Self {
+        Self::Info
+    }
+}
+
 impl Level {
     pub fn get_priority(&self) -> u32 {
         match &self {
-            Level::Info => 1,
-            Level::SelfInfo => 2,
-            Level::Warn => 3,
-            Level::Error => 4,
-            Level::SelfError => 5,
+            Self::Info => 1,
+            Self::SelfInfo => 2,
+            Self::Warn => 3,
+            Self::Error => 4,
+            Self::SelfError => 5,
         }
     }
 
