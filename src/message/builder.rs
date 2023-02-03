@@ -45,8 +45,8 @@ impl MessageBuilder {
         self
     }
 
-    pub fn title(&mut self, title: String) -> &mut Self {
-        self.title = Some(title);
+    pub fn title<S: ToString>(&mut self, title: S) -> &mut Self {
+        self.title = Some(title.to_string());
         self
     }
 
@@ -55,7 +55,7 @@ impl MessageBuilder {
         self
     }
 
-    pub fn author(&mut self, parts: String) -> &mut Self {
+    pub fn author<S: ToString>(&mut self, parts: S) -> &mut Self {
         self.author.extend(parts);
         self
     }
