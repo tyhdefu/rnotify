@@ -1,6 +1,20 @@
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedMessageDetail, FormattedString, Style};
 use crate::message::MessageDetail;
 
+pub trait FormattedStringAppendable {
+    fn append(&mut self, s: FormattedString) -> &mut Self;
+
+    fn append_styled<S: ToString>(&mut self, s: S, style: Style) -> &mut Self {
+        self.append(FormattedString::styled(s, style));
+        self
+    }
+
+    fn append_plain<S: ToString>(&mut self, s: S) -> &mut Self {
+        self.append(FormattedString::plain(s));
+        self
+    }
+}
+
 pub struct MessageDetailBuilder {
     contents: Vec<FormattedMessageComponent>,
     raw: String,
@@ -30,13 +44,38 @@ impl MessageDetailBuilder {
         self
     }
 
-    pub fn text(mut self, parts: Vec<FormattedString>) -> Self {
-        self.contents.push(FormattedMessageComponent::Text(parts));
+    pub fn text_block<F>(mut self, apply: F) -> Self
+        where F: FnOnce(&mut TextBlockBuilder) {
+        let mut text_block = TextBlockBuilder::default();
+        apply(&mut text_block);
+        self.contents.push(text_block.build());
         self
     }
 
     pub fn build(self) -> MessageDetail {
         MessageDetail::Formatted(FormattedMessageDetail::new(self.raw, self.contents))
+    }
+}
+
+#[derive(Default)]
+pub struct TextBlockBuilder {
+    contents: Vec<FormattedString>,
+}
+
+impl TextBlockBuilder {
+    pub fn build(self) -> FormattedMessageComponent {
+        FormattedMessageComponent::Text(self.contents)
+    }
+
+    pub fn build_vec(self) -> Vec<FormattedString> {
+        self.contents
+    }
+}
+
+impl FormattedStringAppendable for TextBlockBuilder {
+    fn append(&mut self, s: FormattedString) -> &mut Self {
+        self.contents.push(s);
+        self
     }
 }
 
@@ -46,35 +85,30 @@ pub struct SectionBuilder {
 }
 
 impl SectionBuilder {
-    pub fn append(&mut self, s: FormattedString) -> &mut Self {
-        self.contents.push(s);
-        self
-    }
-
-    pub fn append_styled<S: ToString>(&mut self, s: S, style: Style) -> &mut Self {
-        self.contents.push(FormattedString::styled(s, style));
-        self
-    }
-
-    pub fn append_plain<S: ToString>(&mut self, s: S) -> &mut Self {
-        self.contents.push(FormattedString::plain(s));
-        self
-    }
-
     pub fn build(self) -> FormattedMessageComponent {
         FormattedMessageComponent::Section(self.name, self.contents)
+    }
+}
+
+impl FormattedStringAppendable for SectionBuilder {
+    fn append(&mut self, s: FormattedString) -> &mut Self {
+        self.contents.push(s);
+        self
     }
 }
 
 #[cfg(test)]
 mod test {
     use crate::message::formatted_detail::{FormattedMessageComponent, FormattedMessageDetail, FormattedString, Style};
-    use crate::message::message_detail_builder::MessageDetailBuilder;
+    use crate::message::message_detail_builder::{FormattedStringAppendable, MessageDetailBuilder};
     use crate::message::MessageDetail;
 
     #[test]
     fn test_detail_builder() {
         let built = MessageDetailBuilder::new()
+            .text_block(|block| {
+                block.append_plain("Base Description");
+            })
             .section("New section", |section| {
                 section.append_styled("hello", Style::Monospace);
             })
@@ -82,7 +116,9 @@ mod test {
 
         let test = MessageDetail::Formatted(FormattedMessageDetail::new(
             "Raw not available".to_string(),
-            vec![FormattedMessageComponent::Section("New section".to_owned(),
+            vec![
+                FormattedMessageComponent::Text(vec![FormattedString::plain("Base Description".to_owned())]),
+                FormattedMessageComponent::Section("New section".to_owned(),
                                                     vec![FormattedString::styled("hello", Style::Monospace)])]
         ));
 
