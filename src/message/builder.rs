@@ -56,7 +56,7 @@ impl MessageBuilder {
     }
 
     pub fn author<S: ToString>(&mut self, parts: S) -> &mut Self {
-        self.author.extend(parts);
+        self.author.extend(parts.to_string());
         self
     }
 
