@@ -12,7 +12,7 @@ categories = ["command-line-utilities"]
 
 [package.metadata.docs.rs]
 all-features = true
-RUSTDOCFLAGS = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [lib]
 name = "rnotifylib"
