@@ -10,6 +10,10 @@ license = "MIT"
 keywords = ["notification"]
 categories = ["command-line-utilities"]
 
+[package.metadata.docs.rs]
+all-features = true
+RUSTDOCFLAGS = ["--cfg", "docsrs"]
+
 [lib]
 name = "rnotifylib"
 path = "src/lib.rs"

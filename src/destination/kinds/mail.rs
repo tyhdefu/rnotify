@@ -3,9 +3,8 @@ use lettre::message::Mailbox;
 use lettre::{SmtpTransport, Transport};
 use lettre::transport::smtp::authentication;
 use serde::{Serialize, Deserialize};
-use crate::destination::kinds::MessageDestination;
 use crate::destination::{MessageDestination, SerializableDestination};
-use crate::Message;
+use crate::message::Message;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct MailDestination {
@@ -15,7 +14,7 @@ pub struct MailDestination {
     reply_to: Option<Mailbox>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Relay {
     url: String,
     #[serde(default = "default_port")]

@@ -1,9 +1,12 @@
+#![cfg_attr(docsrs, feature(doc_cfg))]
 //! # rnotify
 //! rnotify is a binary and library for sending notifications to various services such as:
 //! - Discord
 //! - Email
 //! - Telegram
 //! - A file
+//!
+//! See available destinations [here](destination::kinds)
 //!
 //! ## Binary Usage ##
 //! The rnotify binary is a simple wrapper around the library, implementing a config file and command
