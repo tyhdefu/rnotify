@@ -6,7 +6,6 @@ use rnotifylib::{config, message};
 use rnotifylib::message::{Level, Message, MessageDetail};
 use rnotifylib::message::author::Author;
 use rnotifylib::message_router::MessageRouter;
-use rnotifylib::send_error::SendErrors;
 
 fn main() {
     // TODO: Allow configuration of timezone.

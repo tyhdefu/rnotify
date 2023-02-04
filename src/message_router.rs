@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::destination::routed_destination::{MessageRoutingBehaviour, RoutedDestination};
-use crate::destination::message_condition_config::MessageCondition;
+use crate::destination::message_condition::MessageCondition;
 use crate::message::Message;
 use crate::send_error::{SendError, SendErrors};
 use serde::{Serialize, Deserialize};

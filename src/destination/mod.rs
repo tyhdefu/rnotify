@@ -3,7 +3,7 @@ use crate::message::Message;
 
 pub mod routed_destination;
 pub mod kinds;
-pub mod message_condition_config;
+pub mod message_condition;
 
 pub trait MessageDestination: Debug {
     fn send(&self, message: &Message) -> Result<(), Box<dyn std::error::Error>>;

@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use chrono::{Local, SecondsFormat, TimeZone};
 use serde::{Serialize, Deserialize};
 use crate::http_util;
-use crate::destination::message_condition_config::MessageNotifyConditionConfigEntry;
+use crate::destination::message_condition::MessageNotifyConditionConfigEntry;
 use crate::destination::{MessageDestination, SerializableDestination};
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};
 use crate::message::{Message, MessageDetail};

@@ -2,20 +2,34 @@ use serde::{Serialize, Deserialize};
 use crate::message::component::Component;
 use crate::message::{Level, Message};
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct MessageNotifyConditionConfigEntry<T> {
-    #[serde(flatten)]
-    message_condition: MessageCondition,
-    notify: T,
-}
-
 /// A filter for a [`Message`]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct MessageCondition {
+    component: Option<Component>,
+    #[serde(default = "Level::min")]
+    min_level: Level,
+    #[serde(default = "Level::max")]
+    max_level: Level,
+}
+
+impl MessageCondition {
+    /// Creates a new MessageCondition, that requires ALL of the conditions to be met.
+    /// For each parameter, see the individual documentation
+    /// - [of_component](Self::of_component)
+    /// - [of_min](Self::of_min)
+    /// - [of_max](Self::of_max)
+    pub fn new(component: Option<Component>, min_level: Level, max_level: Level) -> Self {
+        Self {
+            component,
+            min_level,
+            max_level,
+        }
+    }
+
     /// If present, then Messages must be a child of (or same as) this component as per [Component::is_child_of]
     /// ```rust
-    /// use rnotifylib::destination::message_condition_config::MessageCondition;
+    /// use rnotifylib::destination::message_condition::MessageCondition;
     /// use rnotifylib::message::builder::MessageBuilder;
     /// use rnotifylib::message::component::Component;
     /// use rnotifylib::message::Message;
@@ -37,10 +51,16 @@ pub struct MessageCondition {
     /// assert!(!condition.matches(&make_message("database/uptime")), "Should not match - not to do with database backup");
     /// assert!(!condition.matches(&make_message("fish_and_chip_shop/fries")), "Should not match - not to do with database");
     /// ```
-    component: Option<Component>,
+    pub fn of_component(component: Component) -> Self {
+        Self {
+            component: Some(component),
+            ..Default::default()
+        }
+    }
+
     /// Messages with a [`Level`] below this will not match this filter
     /// ```rust
-    /// use rnotifylib::destination::message_condition_config::MessageCondition;
+    /// use rnotifylib::destination::message_condition::MessageCondition;
     /// use rnotifylib::message::builder::MessageBuilder;
     /// use rnotifylib::message::Level;
     ///
@@ -61,11 +81,16 @@ pub struct MessageCondition {
     /// assert!(condition.matches(&message), "Error >= Warn, so should let through")
     ///
     /// ```
-    #[serde(default = "Level::min")]
-    min_level: Level,
+    pub fn of_min(min_level: Level) -> Self {
+        Self {
+            min_level,
+            ..Default::default()
+        }
+    }
+
     /// Messages with a [`Level`] above this will not match this filter
     /// ```rust
-    /// use rnotifylib::destination::message_condition_config::MessageCondition;
+    /// use rnotifylib::destination::message_condition::MessageCondition;
     /// use rnotifylib::message::builder::MessageBuilder;
     /// use rnotifylib::message::Level;
     ///
@@ -86,33 +111,6 @@ pub struct MessageCondition {
     /// assert!(!condition.matches(&message), "Error > Warn,  so should not let through")
     ///
     /// ```
-    #[serde(default = "Level::max")]
-    max_level: Level,
-}
-
-impl MessageCondition {
-    pub fn new(component: Option<Component>, min_level: Level, max_level: Level) -> Self {
-        Self {
-            component,
-            min_level,
-            max_level,
-        }
-    }
-
-    pub fn of_component(component: Component) -> Self {
-        Self {
-            component: Some(component),
-            ..Default::default()
-        }
-    }
-
-    pub fn of_min(min_level: Level) -> Self {
-        Self {
-            min_level,
-            ..Default::default()
-        }
-    }
-
     pub fn of_max(max_level: Level) -> Self {
         Self {
             max_level,
@@ -131,6 +129,7 @@ impl MessageCondition {
 }
 
 impl Default for MessageCondition {
+    /// The default [MessageCondition] matches all messages.
     fn default() -> Self {
         Self {
             component: None,
@@ -138,6 +137,17 @@ impl Default for MessageCondition {
             max_level: Level::max(),
         }
     }
+}
+
+/// Conditionally notify a user / group, based on the given [MessageCondition].
+///
+/// Who this notifies is and the format of that is up to the specific implementation of
+/// the [`MessageDestination`](crate::destination::MessageDestination).
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct MessageNotifyConditionConfigEntry<T> {
+    #[serde(flatten)]
+    message_condition: MessageCondition,
+    notify: T,
 }
 
 impl<T> MessageNotifyConditionConfigEntry<T> {
