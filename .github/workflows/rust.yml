@@ -28,6 +28,6 @@ jobs:
           /usr/local/cargo/git/db
         key: build-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --all-features --verbose
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --all-features --verbose
