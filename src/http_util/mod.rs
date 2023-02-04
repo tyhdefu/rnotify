@@ -1,6 +1,8 @@
 use std::error::Error;
 use serde::Serialize;
-use crate::error::MessageSendError;
+use error::MessageSendError;
+
+pub mod error;
 
 pub fn post_as_json_to<T: Serialize>(url: &str, payload: &T) -> Result<(), Box<dyn Error>> {
     let response = minreq::post(url)
