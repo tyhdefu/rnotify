@@ -28,7 +28,7 @@ pub trait SendError {
 }
 
 /// A struct containing information about what parts succeeded and what parts
-/// failed about [send_message] attempt.
+/// failed about [MessageRouter::route](crate::message_router::MessageRouter::route) attempt.
 #[derive(Debug)]
 pub struct SendErrors<'a> {
     successfully_sent: usize,

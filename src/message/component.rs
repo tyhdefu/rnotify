@@ -23,6 +23,8 @@ use serde::{Serialize, Deserialize, Deserializer, Serializer};
 /// // Therefore messages with the "database" component will be sent to places that listen for the database component
 /// assert!(db_component.is_child_of(&db_component));
 /// ```
+///
+/// [`Message`]: crate::message::Message
 #[derive(Debug, Clone, PartialEq)]
 pub struct Component {
     parts: Vec<String>,

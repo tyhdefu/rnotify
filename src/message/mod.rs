@@ -28,6 +28,7 @@ pub mod detail_builder;
 /// - [Author] - Who created the message
 /// - Timestamp - The unix timestamp in milliseconds, showing when the message was sent.
 ///
+/// [`MessageDestination`]: crate::destination::MessageDestination
 /// [`MessageBuilder`]: builder::MessageBuilder
 /// [`MessageDetailBuilder`]: detail_builder::MessageDetailBuilder
 #[derive(Debug, Clone, PartialEq)]

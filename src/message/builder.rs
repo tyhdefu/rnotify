@@ -71,7 +71,7 @@ impl MessageBuilder {
     /// Sets the timestamp of the message.
     /// This is set by default to the time which the [MessageBuilder] was created.
     ///
-    /// However, if you are using [build_clone] you should be using this
+    /// However, if you are using [`build_clone`](Self::build_clone) you should be using this
     /// if you don't want your messages to all have the same timestamp.
     pub fn timestamp(&mut self, unix_timestamp_millis: i64) -> &mut Self {
         self.unix_timestamp_millis = Some(unix_timestamp_millis);
