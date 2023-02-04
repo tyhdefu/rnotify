@@ -1,12 +1,65 @@
 use std::fmt::{Display, Formatter};
 use serde::{Serialize, Deserialize, Deserializer, Serializer};
 
+/// Indicates what (program/functionality) a [`Message`] is referring to.
+/// This helps route messages to the relevant location, as well
+/// as control their severity.
+///
+/// # Examples #
+/// ```rust
+/// use rnotifylib::message::component::Component;
+///
+/// let db_backup_component = Component::from("database/backup");
+/// let db_uptime_component = Component::from("database/uptime");
+///
+/// let db_component = Component::from("database");
+///
+/// // Both of these are children of the db component - Hence destinations that subscribe
+/// // to the database component will receive both backup and uptime messages.
+/// assert!(db_backup_component.is_child_of(&db_component), "backup component should be child of db component");
+/// assert!(db_uptime_component.is_child_of(&db_component), "uptime component should be child of db component");
+///
+/// // Additionally, the database component is a "child" of itself,
+/// // Therefore messages with the "database" component will be sent to places that listen for the database component
+/// assert!(db_component.is_child_of(&db_component));
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Component {
     parts: Vec<String>,
 }
 
 impl Component {
+    /// Gets whether this is a child of the given parent.
+    /// ```rust
+    /// use rnotifylib::message::component::Component;
+    ///
+    /// // Two child components
+    /// let db_backup_component = Component::from("database/backup");
+    /// let db_uptime_component = Component::from("database/uptime");
+    ///
+    /// // Parent database component
+    /// let db_component = Component::from("database");
+    ///
+    /// // Child components of the same thing are children.
+    /// assert!(db_backup_component.is_child_of(&db_component), "backup component should be child of db component");
+    /// assert!(db_uptime_component.is_child_of(&db_component), "uptime component should be child of db component");
+    ///
+    /// // And the parent is a child of itself.
+    /// assert!(db_component.is_child_of(&db_component), "Should be a child of itself");
+    ///
+    /// // But the parent is not a child of the child.
+    /// assert!(!db_component.is_child_of(&db_backup_component), "database component should not be a child of the backup sub-component");
+    ///
+    /// let website_component = Component::from("website");
+    /// let website_backend_component = Component::from("website/component");
+    ///
+    /// // Unrelated components are not children of each other
+    /// assert!(!db_component.is_child_of(&website_backend_component), "db component shouldn't be a child of website backend component");
+    /// assert!(!db_component.is_child_of(&website_component), "db component shouldn't be a child of the website component");
+    ///
+    /// assert!(!db_backup_component.is_child_of(&website_component), "db backup component shouldn't be a child of the website component");
+    /// assert!(!db_backup_component.is_child_of(&website_backend_component), "db backup shouldn't be a child of the website backup component");
+    /// ```
     pub fn is_child_of(&self, parent: &Component) -> bool {
         if parent.parts.len() > self.parts.len()  {
             return false;

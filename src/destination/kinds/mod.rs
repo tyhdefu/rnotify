@@ -5,5 +5,4 @@ pub mod discord;
 pub mod mail;
 #[cfg(feature = "telegram")]
 pub mod telegram;
-#[cfg(test)]
 pub mod rust_receiver;

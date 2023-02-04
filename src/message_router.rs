@@ -123,20 +123,33 @@ impl Default for MessageRouter {
     }
 }
 
+/// Controls whether a Message should be sent to a destination.
+///
+/// It does this through two "filters"
+/// - [`MessageRoutingBehaviour`]
+/// - A list of [`MessageCondition`]s
+///
+/// # [`MessageRoutingBehaviour`] #
+/// This filter is interdependent with the where the message has already be sent.
+/// See the documentation for it for more details.
+///
+/// # [`MessageCondition`]s #
+/// If none specified, all messages are allowed.
+/// Otherwise it acts like a whitelist.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct RoutingInfo {
     // Whether errors with sending notifications will be reported to this destination.
     #[serde(default)]
     routing_type: MessageRoutingBehaviour,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    applies_to: Option<MessageCondition>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    whitelist: Vec<MessageCondition>,
 }
 
 impl RoutingInfo {
     pub fn of(routing_type: MessageRoutingBehaviour) -> Self {
         Self {
             routing_type,
-            applies_to: None
+            whitelist: vec![]
         }
     }
 
@@ -149,9 +162,10 @@ impl RoutingInfo {
     }
 
     pub fn applies_to(&self, message: &Message) -> bool {
-        match &self.applies_to  {
-            Some(filter) => filter.matches(message),
-            None => true,
+        if self.whitelist.is_empty() {
+            return true;
         }
+        self.whitelist.iter()
+            .any(|condition| condition.matches(message))
     }
 }

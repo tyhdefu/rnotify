@@ -121,7 +121,6 @@ fn get_color_from_level(level: &Level) -> u32 {
         Level::Warn => 0xFFFF00,
         Level::Error => 0xFF0000,
         Level::SelfError => 0xB30000,
-        Level::SelfInfo => 0x964B00,
     }
 }
 

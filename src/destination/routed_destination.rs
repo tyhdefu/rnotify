@@ -5,6 +5,7 @@ use crate::destination::MessageDestination;
 use crate::message::Message;
 use crate::message_router::RoutingInfo;
 
+/// A [Message] that also contains [RoutingInfo].
 pub trait RoutedDestination {
     /// The id provides an identifier
     /// for error reporting.
@@ -37,9 +38,16 @@ pub trait RoutedDestination {
 /// Handles whether messages are routed here / if they will be routed to other destinations.
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum MessageRoutingBehaviour {
-    /// [crate::message::Level::SelfError] messages in addition to all messages will be sent here.
+    /// [`SelfError`] messages in addition to all messages will be sent here.
+    ///
+    /// It is recommended to have at least one Root destination, as this serves as a "log"
+    /// for all the notifications.
+    /// This is normally a [`FileDestination`] since that unlikely to fail.
+    ///
+    /// [`SelfError`]: crate::message::Level::SelfError
+    /// [`FileDestination`]: crate::destination::kinds::file::FileDestination
     Root,
-    /// Messages will be sent here if they would not be sent elsewhere (excludes [Self::Root] destinations).
+    /// Messages will be sent here if they would not be sent elsewhere (excluding [Self::Root] destinations).
     /// Useful if you want to route "unsorted" messages. A "lazy" destination - checks everything else first.
     Drain,
     /// The default option - Messages will be sent here under normal circumstances.
