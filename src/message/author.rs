@@ -28,9 +28,11 @@ pub struct Author {
 impl Author {
     /// Parses an Author from the given string.
     ///
-    /// ```rs
+    /// ```rust
     /// // A good Author for a message originating from the db_checker program
     /// // which is invoked by user's crontab.
+    /// use rnotifylib::message::author::Author;
+    ///
     /// let author = Author::parse("user/cron/db_checker".to_owned());
     /// ```
     pub fn parse(parts: String) -> Author {
