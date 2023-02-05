@@ -95,9 +95,9 @@ fn formatted_to_html(formatted: &FormattedMessageDetail) -> String {
 }
 
 fn escape_html(s: &str) -> String {
-    s.replace('>', "&lt;")
-        .replace('<', "&gt;")
-        .replace('&', "&amp;")
+    s.replace('&', "&amp;")
+        .replace('>', "&gt;")
+        .replace('<', "&lt;")
 }
 
 fn parse_formatted(formatted: &Vec<FormattedString>) -> String {
