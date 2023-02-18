@@ -21,7 +21,7 @@
 //! routing_type = "Root"
 //! type = "File"
 //! id = "log_file"
-//! path = "C:\\Users\\name\\AppData\\Roaming\\rnotify\\rnotify.log" # On windows
+//! path = "C:\\Users\\name\\rnotify.log" # On windows
 //! ```
 //!
 //! An example of a discord destination

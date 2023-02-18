@@ -70,18 +70,9 @@ impl Config {
 
 impl Default for Config {
     fn default() -> Self {
-        #[cfg(target_os = "linux")]
-        let log_path = "/var/log/rnotify.log".into();
+        let mut log_path = PathBuf::from(get_home_dir());
+        log_path.push("rnotify.log");
 
-        #[cfg(target_os = "windows")]
-        let log_path = {
-            let mut app_data: PathBuf = std::env::var("AppData")
-                .expect("Failed to find appdata environment variable, cannot create default configuration file, try creating it manually.")
-                .into();
-            app_data.push("rnotify");
-            app_data.push("rnotify.log");
-            app_data
-        };
         Self {
             destinations: vec![
                 SerializableRoutedDestination::create("file_log".to_owned(), FileDestination::new(log_path), RoutingInfo::root()),
