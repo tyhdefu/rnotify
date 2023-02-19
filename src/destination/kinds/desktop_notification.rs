@@ -1,9 +1,9 @@
 use std::error::Error;
 use std::fmt::Debug;
-use notify_rust::{Hint, Notification, Urgency};
+use notify_rust::{Notification, Urgency};
 use serde::{Serialize, Deserialize};
 use crate::destination::{MessageDestination, SerializableDestination};
-use crate::message::{Level, Message, MessageDetail};
+use crate::message::{Level, Message};
 
 /// Receive a notification to the desktop
 ///

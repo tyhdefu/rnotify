@@ -7,7 +7,7 @@ use crate::destination::kinds::file::FileDestination;
 use crate::destination::{MessageDestination, SerializableDestination};
 use crate::message_router::RoutingInfo;
 
-const CONFIG_FILE_NAME: &str = ".rnotify.toml";
+const CONFIG_FILE_NAME: &str = "rnotify.toml";
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
@@ -66,18 +66,22 @@ impl Config {
     pub fn take_destinations(self) -> Vec<SerializableRoutedDestination> {
         self.destinations
     }
-}
 
-impl Default for Config {
-    fn default() -> Self {
-        let mut log_path = PathBuf::from(get_home_dir());
+    fn try_default() -> Result<Self, String> {
+        let log_path = dirs::state_dir()
+            .or_else(|| dirs::home_dir());
+
+        if log_path.is_none() {
+            return Err("Failed to get state directory - if you're on linux, is $HOME set?".to_owned());
+        }
+        let mut log_path = log_path.unwrap();
         log_path.push("rnotify.log");
 
-        Self {
+        Ok(Self {
             destinations: vec![
                 SerializableRoutedDestination::create("file_log".to_owned(), FileDestination::new(log_path), RoutingInfo::root()),
             ]
-        }
+        })
     }
 }
 
@@ -90,13 +94,19 @@ pub fn read_config_file(mut file: File) -> Config {
     }
 }
 
-pub fn fetch_config_file(verbose: bool, config_file_path: &Option<PathBuf>) -> File {
-    if config_file_path.is_some() {
-        return File::options().read(true).open(config_file_path.as_ref().unwrap())
-            .expect(&format!("Failed to open config file provided by argument for reading, {:?}", config_file_path));
+pub fn fetch_config_file(verbose: bool, config_file_path_override: &Option<PathBuf>) -> Result<File, String> {
+    if config_file_path_override.is_some() {
+        return File::options().read(true).open(config_file_path_override.as_ref().unwrap())
+            .map_err(|e| format!("Failed to open config file {:?} provided by argument for reading: {}", config_file_path_override, e));
     }
 
-    let path_buf = get_default_config_path();
+    let config_dir = dirs::config_dir();
+    if config_dir.is_none() {
+        return Err("Failed to find config directory - if you're on linux, is $HOME set?".to_owned());
+    }
+    let mut path_buf = config_dir.unwrap();
+    path_buf.push(CONFIG_FILE_NAME);
+
     if verbose {
         println!("Using config file path: {}", &path_buf.display());
     }
@@ -109,30 +119,17 @@ pub fn fetch_config_file(verbose: bool, config_file_path: &Option<PathBuf>) -> F
             .open(&path_buf)
             .expect("Failed to create new config file to write default config.");
 
-        let string = toml::to_string(&Config::default()).expect("Failed to serialize default config.");
+        let default_config = Config::try_default().expect("Failed to create default config");
+        let string = toml::to_string(&default_config)
+            .expect("Failed to serialize default config.");
         file.write_all(string.as_bytes()).expect("Failed to write default config file to config file.");
         println!("Created default config file");
     }
 
     File::options()
         .read(true)
-        .open(&path_buf).expect("Failed to open config file for reading.")
-}
-
-#[cfg(target_os = "windows")]
-const HOME_DIR_ENVIRONMENT_VARIABLE: &str = "USERPROFILE";
-#[cfg(target_os = "linux")]
-const HOME_DIR_ENVIRONMENT_VARIABLE: &str = "HOME";
-
-fn get_home_dir() -> String {
-    std::env::var(HOME_DIR_ENVIRONMENT_VARIABLE)
-        .expect("Failed to find homedir, in order to find config file, try setting the environment variable.")
-}
-
-pub fn get_default_config_path() -> PathBuf {
-    let mut path: PathBuf = get_home_dir().into();
-    path.push(CONFIG_FILE_NAME);
-    path
+        .open(&path_buf)
+        .map_err(|e| format!("Failed to open config file for reading: {}", e))
 }
 
 #[cfg(test)]

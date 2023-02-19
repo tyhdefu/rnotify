@@ -15,7 +15,8 @@ fn main() {
     let cli: Cli = Cli::parse();
 
     let config = {
-        let file = config::fetch_config_file(cli.verbose, &cli.config_file);
+        let file = config::fetch_config_file(cli.verbose, &cli.config_file)
+            .expect("Failed to fetch config file");
         config::read_config_file(file)
     };
 
