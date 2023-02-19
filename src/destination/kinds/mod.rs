@@ -22,6 +22,11 @@
 //!
 //! Reasonable support for formatting.
 //!
+//! ## Desktop ##
+//! Feature **desktop**
+//!
+//! No support for formatting currently - may support differentiation of [`Level`](crate::message::Level)
+//!
 //! ## Rust Receiver ##
 //! Always enabled.
 //!
@@ -40,4 +45,4 @@ pub mod mail;
 pub mod telegram;
 pub mod rust_receiver;
 #[cfg(feature = "desktop")]
-pub mod desktop_notification;
+pub mod desktop;
