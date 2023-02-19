@@ -36,6 +36,7 @@ discord-webhook = { version = "0.1.0", features = ["models"], default-features =
 minreq = { version = "2.6.0", default-features = false, features = ["https-rustls", "json-using-serde"], optional = true}
 
 lettre = { version = "0.10.1", default-features = false, features = ["serde", "rustls-tls", "builder", "smtp-transport"], optional = true }
+notify-rust = { version = "4.7.1", optional = true }
 
 [features]
 default = ["discord", "telegram"]
@@ -45,7 +46,7 @@ http = ["dep:minreq"]
 discord = ["dep:discord-webhook", "http"]
 telegram = ["http"]
 mail = ["dep:lettre"]
-
+desktop = ["dep:notify-rust"]
 
 [profile.release]
 opt-level = 'z'

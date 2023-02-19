@@ -1,7 +1,7 @@
 use std::error::Error;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use serde::{Serialize, Deserialize};
-use crate::http_util;
+use crate::util::http_util;
 use crate::destination::message_condition::MessageNotifyConditionConfigEntry;
 use crate::destination::{MessageDestination, SerializableDestination};
 use crate::message::formatted_detail::{FormattedMessageComponent, FormattedString, Style};

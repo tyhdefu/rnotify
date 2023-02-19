@@ -39,3 +39,5 @@ pub mod mail;
 #[cfg(feature = "telegram")]
 pub mod telegram;
 pub mod rust_receiver;
+#[cfg(feature = "desktop")]
+pub mod desktop_notification;
