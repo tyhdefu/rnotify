@@ -10,6 +10,12 @@ cargo install rnotify --all-features
 ```
 **By default, only some destinations are included, include all by using the --all-features** flag as shown above.
 
+## Updating ##
+To update rnotify, simply re-run
+```console
+cargo install rnotify --all-features
+```
+
 ## Basic Usage ##
 Send a (info) notification to all configured destinations  
 ```console
