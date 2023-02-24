@@ -45,6 +45,14 @@ impl MessageDestination for DesktopNotificationReceiver {
 
             notification.urgency(urgency);
 
+            // https://specifications.freedesktop.org/sound-naming-spec/sound-naming-spec-latest.html
+            let sound = match message.get_level() {
+                Level::Info => "message-new-instant",
+                Level::Warn => "dialog-warning",
+                Level::Error => "dialog-error",
+                Level::SelfError => "dialog-error",
+            };
+            notification.sound_name(sound);
 
             // TODO: Can we set icon on macos / windows
             // https://wiki.archlinux.org/title/Desktop_notifications#Bash
